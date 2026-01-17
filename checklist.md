@@ -39,8 +39,8 @@
 - [x] Root layout with providers
 - [x] Public layout (marketing pages)
 - [x] Dashboard layout (authenticated users)
-- [ ] Admin layout
-- [ ] Instructor layout
+- [x] Admin layout
+- [x] Instructor layout
 - [x] Responsive header/navbar
 - [x] Mobile navigation (hamburger menu)
 - [x] Sidebar navigation for dashboards
@@ -283,22 +283,22 @@
   - [x] Categories table
   - [x] Add/edit/delete categories
   - [x] Category icons
-- [ ] Announcement management
-  - [ ] Announcements table
-  - [ ] Create announcement
-  - [ ] Schedule announcements
-  - [ ] Priority settings
-- [ ] Site configuration
-  - [ ] Site name/description
-  - [ ] Logo upload
-  - [ ] Favicon upload
-  - [ ] Brand colors
-  - [ ] Feature toggles
-  - [ ] Maintenance mode
-- [ ] Payment configuration
-  - [ ] Stripe settings
-  - [ ] Paystack settings
-  - [ ] Default provider
+- [x] Announcement management
+  - [x] Announcements table
+  - [x] Create announcement
+  - [x] Schedule announcements
+  - [x] Priority settings
+- [x] Site configuration
+  - [x] Site name/description
+  - [x] Logo upload
+  - [x] Favicon upload
+  - [x] Brand colors
+  - [x] Feature toggles
+  - [x] Maintenance mode
+- [x] Payment configuration
+  - [x] Stripe settings
+  - [x] Paystack settings
+  - [x] Default provider
 - [x] Analytics dashboard
   - [x] User analytics
   - [x] Course analytics
@@ -513,8 +513,8 @@ frontend-trainingsuite/
 | Phase 7: Live Sessions | 🔲 Not Started | |
 | Phase 8: Community | 🔲 Not Started | |
 | Phase 9: Payments | 🔲 Not Started | |
-| Phase 10: Instructor | 🔲 Not Started | |
-| Phase 11: Admin | 🔄 In Progress | Admin layout, dashboard, users, courses, categories, analytics |
+| Phase 10: Instructor | 🔄 In Progress | Instructor layout, dashboard overview |
+| Phase 11: Admin | ✅ Complete | Admin layout, dashboard, users, courses, categories, analytics, announcements, site config |
 | Phase 12: Components | 🔲 Not Started | |
 | Phase 13: Polish | 🔲 Not Started | |
 | Phase 14: Testing | 🔲 Not Started | |
