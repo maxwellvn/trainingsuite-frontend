@@ -11,8 +11,27 @@ import type {
   CourseStatus,
 } from "@/types";
 
+export interface CreateCourseData {
+  title: string;
+  description: string;
+  instructor: string;
+  category?: string;
+  price?: number;
+  level?: string;
+  language?: string;
+  status?: string;
+}
+
 export const adminApi = {
   // Courses
+  createCourse: async (data: CreateCourseData) => {
+    const response = await apiClient.post<ApiResponse<Course>>(
+      "/admin/courses",
+      data
+    );
+    return response.data;
+  },
+
   updateCourse: async (id: string, data: Partial<Course>) => {
     const response = await apiClient.put<ApiResponse<Course>>(
       `/admin/courses/${id}`,
@@ -64,6 +83,13 @@ export const adminApi = {
     }
     const response = await apiClient.get<PaginatedResponse<User>>(
       `/admin/users?${params.toString()}`
+    );
+    return response.data;
+  },
+
+  getInstructors: async () => {
+    const response = await apiClient.get<PaginatedResponse<User>>(
+      "/admin/users?role=instructor&limit=100"
     );
     return response.data;
   },
