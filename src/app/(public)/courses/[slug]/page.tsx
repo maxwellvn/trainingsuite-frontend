@@ -686,10 +686,32 @@ export default function CourseDetailPage({
                       </div>
                     </div>
 
+                    {/* Review Form */}
+                    <div className="mt-8 border-t pt-6">
+                      {isAuthenticated ? (
+                        <ReviewForm
+                          courseId={course._id}
+                          existingReview={userReview}
+                          onSuccess={handleReviewSuccess}
+                        />
+                      ) : (
+                        <div className="bg-muted/50 rounded-lg p-4 text-center">
+                          <p className="text-muted-foreground mb-3">
+                            Sign in to leave a review
+                          </p>
+                          <Button asChild>
+                            <Link href="/login">Sign In</Link>
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
                     {/* Individual Reviews */}
                     {ratings.length > 0 ? (
                       <div className="mt-8 space-y-6">
-                        {ratings.map((rating: any) => (
+                        {ratings
+                          .filter((r) => r._id !== userReview?._id)
+                          .map((rating) => (
                           <div key={rating._id} className="border-t pt-6">
                             <div className="flex items-start gap-4">
                               <Avatar>
@@ -716,19 +738,21 @@ export default function CourseDetailPage({
                                     />
                                   ))}
                                 </div>
-                                <p className="text-sm text-muted-foreground mt-2">
-                                  {rating.review}
-                                </p>
+                                {rating.review && (
+                                  <p className="text-sm text-muted-foreground mt-2">
+                                    {rating.review}
+                                  </p>
+                                )}
                               </div>
                             </div>
                           </div>
                         ))}
                       </div>
-                    ) : (
+                    ) : !userReview ? (
                       <p className="text-center py-8 text-muted-foreground mt-6">
                         No reviews yet. Be the first to review this course!
                       </p>
-                    )}
+                    ) : null}
                   </CardContent>
                 </Card>
               </TabsContent>

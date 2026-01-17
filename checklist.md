@@ -188,12 +188,12 @@
   - [x] Reply to comments
   - [ ] Like/react to posts
 - [x] Create/edit post form
-- [ ] Course ratings & reviews
-  - [ ] Star rating input
-  - [ ] Review text area
-  - [ ] Submit review
-  - [ ] Reviews list
-  - [ ] Edit own review
+- [x] Course ratings & reviews
+  - [x] Star rating input
+  - [x] Review text area
+  - [x] Submit review
+  - [x] Reviews list
+  - [x] Edit own review
 
 ---
 
@@ -511,7 +511,7 @@ frontend-trainingsuite/
 | Phase 5: User Dashboard | ✅ Complete | Dashboard, my courses, certificates, notifications, settings, payment history |
 | Phase 6: Learning | ✅ Complete | Course player, video player, quiz interface |
 | Phase 7: Live Sessions | ✅ Complete | Sessions listing, session detail with player, countdown timer |
-| Phase 8: Community | 🔄 In Progress | Forums (complete), ratings/reviews (pending) |
+| Phase 8: Community | ✅ Complete | Forums, ratings/reviews |
 | Phase 9: Payments | 🔲 Not Started | |
 | Phase 10: Instructor | 🔄 In Progress | Dashboard, courses list, analytics, live sessions. Module/lesson builder pending |
 | Phase 11: Admin | ✅ Complete | Admin layout, dashboard, users, courses, categories, analytics, announcements, site config |
