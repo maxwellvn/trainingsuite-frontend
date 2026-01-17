@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search,
   Plus,
@@ -12,6 +13,7 @@ import {
   Eye,
   EyeOff,
   GripVertical,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,13 +48,24 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCategories } from "@/hooks";
+import { useToast } from "@/hooks/use-toast";
+import { categoriesApi } from "@/lib/api/categories";
 import type { Category } from "@/types";
 
 function CategoriesTableSkeleton() {
@@ -114,21 +127,73 @@ function CategoryDialog({
   category,
   open,
   onOpenChange,
+  onSuccess,
 }: {
   category?: Category | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
 }) {
+  const { toast } = useToast();
   const isEdit = !!category;
-  const [name, setName] = useState(category?.name || "");
-  const [description, setDescription] = useState(category?.description || "");
-  const [isActive, setIsActive] = useState(category?.isActive ?? true);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [icon, setIcon] = useState("");
+  const [isActive, setIsActive] = useState(true);
+
+  // Reset form when dialog opens
+  useEffect(() => {
+    if (open) {
+      setName(category?.name || "");
+      setDescription(category?.description || "");
+      setIcon(category?.icon || "");
+      setIsActive(category?.isActive !== false);
+    }
+  }, [open, category]);
+
+  const createMutation = useMutation({
+    mutationFn: (data: { name: string; description?: string; icon?: string }) =>
+      categoriesApi.create(data),
+    onSuccess: () => {
+      toast({ title: "Category created successfully" });
+      onOpenChange(false);
+      onSuccess();
+    },
+    onError: () => {
+      toast({ title: "Failed to create category", variant: "destructive" });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Category> }) =>
+      categoriesApi.update(id, data),
+    onSuccess: () => {
+      toast({ title: "Category updated successfully" });
+      onOpenChange(false);
+      onSuccess();
+    },
+    onError: () => {
+      toast({ title: "Failed to update category", variant: "destructive" });
+    },
+  });
 
   const handleSave = () => {
-    // TODO: Implement save logic
-    console.log({ name, description, isActive });
-    onOpenChange(false);
+    if (!name.trim()) {
+      toast({ title: "Category name is required", variant: "destructive" });
+      return;
+    }
+
+    if (isEdit && category) {
+      updateMutation.mutate({
+        id: category._id,
+        data: { name, description, icon, isActive },
+      });
+    } else {
+      createMutation.mutate({ name, description, icon });
+    }
   };
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -143,7 +208,7 @@ function CategoryDialog({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">Name *</Label>
             <Input
               id="name"
               value={name}
@@ -159,6 +224,16 @@ function CategoryDialog({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Brief description of the category"
               rows={3}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="icon">Icon (emoji)</Label>
+            <Input
+              id="icon"
+              value={icon}
+              onChange={(e) => setIcon(e.target.value)}
+              placeholder="e.g., 💻"
+              maxLength={4}
             />
           </div>
           <div className="flex items-center justify-between">
@@ -179,7 +254,8 @@ function CategoryDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>
+          <Button onClick={handleSave} disabled={isPending}>
+            {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {isEdit ? "Save Changes" : "Create Category"}
           </Button>
         </DialogFooter>
@@ -189,12 +265,41 @@ function CategoryDialog({
 }
 
 export default function CategoriesPage() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editCategory, setEditCategory] = useState<Category | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
   const { data: categoriesResponse, isLoading } = useCategories();
   const categories = (categoriesResponse?.data || []) as Category[];
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => categoriesApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast({ title: "Category deleted successfully" });
+      setDeleteDialogOpen(false);
+      setCategoryToDelete(null);
+    },
+    onError: () => {
+      toast({ title: "Failed to delete category", variant: "destructive" });
+    },
+  });
+
+  const toggleActiveMutation = useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+      categoriesApi.update(id, { isActive }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast({ title: "Category updated successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to update category", variant: "destructive" });
+    },
+  });
 
   const filteredCategories = categories.filter((category) =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -208,6 +313,28 @@ export default function CategoriesPage() {
   const handleAdd = () => {
     setEditCategory(null);
     setDialogOpen(true);
+  };
+
+  const handleDelete = (category: Category) => {
+    setCategoryToDelete(category);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (categoryToDelete) {
+      deleteMutation.mutate(categoryToDelete._id);
+    }
+  };
+
+  const handleToggleActive = (category: Category) => {
+    toggleActiveMutation.mutate({
+      id: category._id,
+      isActive: category.isActive === false,
+    });
+  };
+
+  const handleDialogSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["categories"] });
   };
 
   // Calculate stats
@@ -395,7 +522,7 @@ export default function CategoriesPage() {
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleToggleActive(category)}>
                               {category.isActive !== false ? (
                                 <>
                                   <EyeOff className="h-4 w-4 mr-2" />
@@ -409,7 +536,10 @@ export default function CategoriesPage() {
                               )}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600">
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => handleDelete(category)}
+                            >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete
                             </DropdownMenuItem>
@@ -430,7 +560,40 @@ export default function CategoriesPage() {
         category={editCategory}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        onSuccess={handleDialogSuccess}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Category</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{categoryToDelete?.name}"? This
+              action cannot be undone.
+              {(categoryToDelete?.courseCount || 0) > 0 && (
+                <span className="block mt-2 text-amber-600">
+                  Warning: This category has {categoryToDelete?.courseCount} courses
+                  associated with it.
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending && (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              )}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

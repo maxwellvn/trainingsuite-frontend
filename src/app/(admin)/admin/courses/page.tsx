@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Search,
   MoreHorizontal,
@@ -20,6 +21,7 @@ import {
   Users,
   Archive,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -49,8 +51,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { formatCurrency } from "@/lib/utils";
 import { useCourses } from "@/hooks";
+import { useToast } from "@/hooks/use-toast";
+import { adminApi } from "@/lib/api/admin";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Course, CourseStatus } from "@/types";
 
@@ -134,11 +148,15 @@ function CoursesTableSkeleton() {
 }
 
 export default function CoursesPage() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [page, setPage] = useState(1);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
 
   const { data: coursesResponse, isLoading } = useCourses({
     page,
@@ -149,6 +167,58 @@ export default function CoursesPage() {
 
   const courses = (coursesResponse?.data || []) as Course[];
   const pagination = coursesResponse?.pagination;
+
+  // Mutations
+  const publishMutation = useMutation({
+    mutationFn: (id: string) => adminApi.publishCourse(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      toast({ title: "Course published successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to publish course", variant: "destructive" });
+    },
+  });
+
+  const archiveMutation = useMutation({
+    mutationFn: (id: string) => adminApi.archiveCourse(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      toast({ title: "Course archived successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to archive course", variant: "destructive" });
+    },
+  });
+
+  const featureMutation = useMutation({
+    mutationFn: ({ id, featured }: { id: string; featured: boolean }) =>
+      adminApi.featureCourse(id, featured),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      toast({
+        title: variables.featured
+          ? "Course featured successfully"
+          : "Course unfeatured successfully",
+      });
+    },
+    onError: () => {
+      toast({ title: "Failed to update course", variant: "destructive" });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => adminApi.deleteCourse(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      toast({ title: "Course deleted successfully" });
+      setDeleteDialogOpen(false);
+      setCourseToDelete(null);
+    },
+    onError: () => {
+      toast({ title: "Failed to delete course", variant: "destructive" });
+    },
+  });
 
   const filteredCourses = courses.filter((course) => {
     if (categoryFilter === "all") return true;
@@ -168,6 +238,33 @@ export default function CoursesPage() {
     setSelectedCourses((prev) =>
       prev.includes(id) ? prev.filter((cid) => cid !== id) : [...prev, id]
     );
+  };
+
+  const handleDelete = (course: Course) => {
+    setCourseToDelete(course);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (courseToDelete) {
+      deleteMutation.mutate(courseToDelete._id);
+    }
+  };
+
+  // Bulk actions
+  const handleBulkPublish = () => {
+    selectedCourses.forEach((id) => publishMutation.mutate(id));
+    setSelectedCourses([]);
+  };
+
+  const handleBulkArchive = () => {
+    selectedCourses.forEach((id) => archiveMutation.mutate(id));
+    setSelectedCourses([]);
+  };
+
+  const handleBulkFeature = () => {
+    selectedCourses.forEach((id) => featureMutation.mutate({ id, featured: true }));
+    setSelectedCourses([]);
   };
 
   // Calculate stats
@@ -264,27 +361,11 @@ export default function CoursesPage() {
                   <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="programming">Programming</SelectItem>
-                  <SelectItem value="design">Design</SelectItem>
-                  <SelectItem value="business">Business</SelectItem>
-                  <SelectItem value="marketing">Marketing</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm">
                 <Download className="h-4 w-4 mr-2" />
                 Export
-              </Button>
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Course
               </Button>
             </div>
           </div>
@@ -296,16 +377,44 @@ export default function CoursesPage() {
               <span className="text-sm font-medium">
                 {selectedCourses.length} selected
               </span>
-              <Button variant="outline" size="sm">
-                <CheckCircle className="h-4 w-4 mr-2" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkPublish}
+                disabled={publishMutation.isPending}
+              >
+                {publishMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                )}
                 Publish
               </Button>
-              <Button variant="outline" size="sm">
-                <Sparkles className="h-4 w-4 mr-2" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBulkFeature}
+                disabled={featureMutation.isPending}
+              >
+                {featureMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Sparkles className="h-4 w-4 mr-2" />
+                )}
                 Feature
               </Button>
-              <Button variant="outline" size="sm" className="text-red-600">
-                <Archive className="h-4 w-4 mr-2" />
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-red-600"
+                onClick={handleBulkArchive}
+                disabled={archiveMutation.isPending}
+              >
+                {archiveMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Archive className="h-4 w-4 mr-2" />
+                )}
                 Archive
               </Button>
             </div>
@@ -432,28 +541,46 @@ export default function CoursesPage() {
                                 View Course
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit Course
-                            </DropdownMenuItem>
                             {course.status !== "published" && (
-                              <DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => publishMutation.mutate(course._id)}
+                              >
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 Publish
                               </DropdownMenuItem>
                             )}
-                            {!course.isFeatured && (
-                              <DropdownMenuItem>
+                            {course.isFeatured ? (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  featureMutation.mutate({ id: course._id, featured: false })
+                                }
+                              >
+                                <Sparkles className="h-4 w-4 mr-2" />
+                                Unfeature
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  featureMutation.mutate({ id: course._id, featured: true })
+                                }
+                              >
                                 <Sparkles className="h-4 w-4 mr-2" />
                                 Feature
                               </DropdownMenuItem>
                             )}
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>
-                              <Archive className="h-4 w-4 mr-2" />
-                              Archive
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">
+                            {course.status !== "archived" && (
+                              <DropdownMenuItem
+                                onClick={() => archiveMutation.mutate(course._id)}
+                              >
+                                <Archive className="h-4 w-4 mr-2" />
+                                Archive
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => handleDelete(course)}
+                            >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Delete
                             </DropdownMenuItem>
@@ -506,6 +633,33 @@ export default function CoursesPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Course</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{courseToDelete?.title}"? This action
+              cannot be undone and will remove all associated data including
+              enrollments and progress.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

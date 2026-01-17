@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -296,10 +296,112 @@ export default function CourseDetailPage({
   const resolvedParams = use(params);
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const { data: courseResponse, isLoading: courseLoading } = useCourse(resolvedParams.slug);
   const { data: curriculumResponse, isLoading: curriculumLoading } = useCourseCurriculum(resolvedParams.slug);
   const { data: ratingsResponse } = useCourseRatings(resolvedParams.slug);
+
+  // Check enrollment status
+  const { data: enrollmentResponse } = useQuery({
+    queryKey: ["enrollment-check", resolvedParams.slug],
+    queryFn: async () => {
+      if (!isAuthenticated) return null;
+      try {
+        const response = await coursesApi.getBySlug(resolvedParams.slug);
+        // Check from user's enrollments
+        const enrollmentsResponse = await fetch("/api/enrollments/my", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+        });
+        const enrollments = await enrollmentsResponse.json();
+        const course = response?.data;
+        if (course && enrollments?.data) {
+          return enrollments.data.find((e: any) =>
+            e.course?._id === course._id || e.course === course._id
+          );
+        }
+        return null;
+      } catch {
+        return null;
+      }
+    },
+    enabled: isAuthenticated,
+  });
+
+  const isEnrolled = !!enrollmentResponse;
+
+  // Wishlist state (using localStorage)
+  const [isWishlisted, setIsWishlisted] = useState(false);
+
+  // Check wishlist on mount
+  useEffect(() => {
+    if (typeof window !== "undefined" && courseResponse?.data) {
+      const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+      setIsWishlisted(wishlist.includes(courseResponse.data._id));
+    }
+  }, [courseResponse?.data?._id]);
+
+  // Enrollment mutation
+  const enrollMutation = useMutation({
+    mutationFn: (courseId: string) => coursesApi.enroll(courseId),
+    onSuccess: () => {
+      toast({ title: "Successfully enrolled!" });
+      queryClient.invalidateQueries({ queryKey: ["enrollments"] });
+      queryClient.invalidateQueries({ queryKey: ["enrollment-check"] });
+      const course = courseResponse?.data;
+      if (course) {
+        router.push(`/courses/${course.slug}/learn`);
+      }
+    },
+    onError: (error: any) => {
+      const message = error?.response?.data?.message || "Failed to enroll";
+      toast({ title: message, variant: "destructive" });
+    },
+  });
+
+  const handleEnroll = () => {
+    const course = courseResponse?.data;
+    if (!course) return;
+
+    if (!isAuthenticated) {
+      toast({ title: "Please login to enroll", variant: "destructive" });
+      router.push(`/login?redirect=/courses/${resolvedParams.slug}`);
+      return;
+    }
+
+    if (course.isFree) {
+      enrollMutation.mutate(course._id);
+    } else {
+      // For paid courses, redirect to checkout
+      router.push(`/courses/${course.slug}/checkout`);
+    }
+  };
+
+  const handleWishlist = () => {
+    const course = courseResponse?.data;
+    if (!course) return;
+
+    const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+
+    if (isWishlisted) {
+      const newWishlist = wishlist.filter((id: string) => id !== course._id);
+      localStorage.setItem("wishlist", JSON.stringify(newWishlist));
+      setIsWishlisted(false);
+      toast({ title: "Removed from wishlist" });
+    } else {
+      wishlist.push(course._id);
+      localStorage.setItem("wishlist", JSON.stringify(wishlist));
+      setIsWishlisted(true);
+      toast({ title: "Added to wishlist!" });
+    }
+  };
+
+  const handleGoToLearning = () => {
+    const course = courseResponse?.data;
+    if (course) {
+      router.push(`/courses/${course.slug}/learn`);
+    }
+  };
 
   if (courseLoading) {
     return <CourseDetailSkeleton />;
@@ -462,12 +564,40 @@ export default function CourseDetailPage({
                     )}
                   </div>
 
-                  <Button size="lg" className="w-full mb-3">
-                    {course.isFree ? "Enroll for Free" : "Enroll Now"}
-                  </Button>
-                  <Button variant="outline" size="lg" className="w-full">
-                    Add to Wishlist
-                  </Button>
+                  {isEnrolled ? (
+                    <Button size="lg" className="w-full mb-3" onClick={handleGoToLearning}>
+                      <Play className="h-4 w-4 mr-2" />
+                      Continue Learning
+                    </Button>
+                  ) : (
+                    <Button
+                      size="lg"
+                      className="w-full mb-3"
+                      onClick={handleEnroll}
+                      disabled={enrollMutation.isPending}
+                    >
+                      {enrollMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                      {course.isFree ? "Enroll for Free" : "Enroll Now"}
+                    </Button>
+                  )}
+
+                  {!isEnrolled && (
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="w-full"
+                      onClick={handleWishlist}
+                    >
+                      {isWishlisted ? (
+                        <>
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          In Wishlist
+                        </>
+                      ) : (
+                        "Add to Wishlist"
+                      )}
+                    </Button>
+                  )}
 
                   <p className="text-xs text-center text-muted-foreground mt-3">
                     30-Day Money-Back Guarantee

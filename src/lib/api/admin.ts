@@ -7,9 +7,51 @@ import type {
   OverviewAnalytics,
   SiteConfig,
   Announcement,
+  Course,
+  CourseStatus,
 } from "@/types";
 
 export const adminApi = {
+  // Courses
+  updateCourse: async (id: string, data: Partial<Course>) => {
+    const response = await apiClient.put<ApiResponse<Course>>(
+      `/admin/courses/${id}`,
+      data
+    );
+    return response.data;
+  },
+
+  deleteCourse: async (id: string) => {
+    const response = await apiClient.delete<ApiResponse<null>>(
+      `/admin/courses/${id}`
+    );
+    return response.data;
+  },
+
+  publishCourse: async (id: string) => {
+    const response = await apiClient.put<ApiResponse<Course>>(
+      `/admin/courses/${id}`,
+      { status: "published" as CourseStatus }
+    );
+    return response.data;
+  },
+
+  archiveCourse: async (id: string) => {
+    const response = await apiClient.put<ApiResponse<Course>>(
+      `/admin/courses/${id}`,
+      { status: "archived" as CourseStatus }
+    );
+    return response.data;
+  },
+
+  featureCourse: async (id: string, featured: boolean) => {
+    const response = await apiClient.put<ApiResponse<Course>>(
+      `/admin/courses/${id}`,
+      { isFeatured: featured }
+    );
+    return response.data;
+  },
+
   // Users
   getUsers: async (filters?: UserFilters) => {
     const params = new URLSearchParams();
