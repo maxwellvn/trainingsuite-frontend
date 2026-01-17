@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Users,
   BookOpen,
   DollarSign,
   TrendingUp,
-  TrendingDown,
   Calendar,
   Download,
   ArrowUpRight,
@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AreaChart,
@@ -45,114 +46,83 @@ import {
   Line,
   Legend,
 } from "recharts";
+import { adminApi } from "@/lib/api/admin";
 import { formatCurrency } from "@/lib/utils";
+import type { OverviewAnalytics } from "@/types";
 
-// Mock data for charts
-const revenueData = [
-  { month: "Jan", revenue: 12400, enrollments: 234 },
-  { month: "Feb", revenue: 15600, enrollments: 287 },
-  { month: "Mar", revenue: 18200, enrollments: 312 },
-  { month: "Apr", revenue: 16800, enrollments: 298 },
-  { month: "May", revenue: 21400, enrollments: 378 },
-  { month: "Jun", revenue: 24800, enrollments: 412 },
-  { month: "Jul", revenue: 22100, enrollments: 387 },
-  { month: "Aug", revenue: 26500, enrollments: 445 },
-  { month: "Sep", revenue: 28900, enrollments: 478 },
-  { month: "Oct", revenue: 32100, enrollments: 523 },
-  { month: "Nov", revenue: 35600, enrollments: 567 },
-  { month: "Dec", revenue: 38400, enrollments: 612 },
-];
+// Types for analytics data
+interface RevenueByDay {
+  _id: string;
+  revenue: number;
+  count: number;
+}
 
-const userGrowthData = [
-  { month: "Jan", newUsers: 156, activeUsers: 1240 },
-  { month: "Feb", newUsers: 189, activeUsers: 1420 },
-  { month: "Mar", newUsers: 234, activeUsers: 1650 },
-  { month: "Apr", newUsers: 278, activeUsers: 1890 },
-  { month: "May", newUsers: 312, activeUsers: 2180 },
-  { month: "Jun", newUsers: 356, activeUsers: 2520 },
-];
+interface RevenueByCourse {
+  courseId: string;
+  title: string;
+  revenue: number;
+  transactions: number;
+}
 
-const coursePerformanceData = [
-  { name: "React Masterclass", enrollments: 1234, revenue: 12340, completion: 78 },
-  { name: "Node.js Advanced", enrollments: 987, revenue: 9870, completion: 72 },
-  { name: "Python Basics", enrollments: 856, revenue: 8560, completion: 85 },
-  { name: "AWS Fundamentals", enrollments: 743, revenue: 7430, completion: 68 },
-  { name: "TypeScript Deep Dive", enrollments: 621, revenue: 6210, completion: 74 },
-];
+interface EnrollmentsByDay {
+  _id: string;
+  count: number;
+}
 
-const categoryDistribution = [
-  { name: "Programming", value: 45, color: "#6366f1" },
-  { name: "Design", value: 20, color: "#f59e0b" },
-  { name: "Business", value: 15, color: "#10b981" },
-  { name: "Marketing", value: 12, color: "#ec4899" },
-  { name: "Other", value: 8, color: "#64748b" },
-];
+interface TopCourse {
+  courseId: string;
+  title: string;
+  enrollments: number;
+}
 
-const stats = [
-  {
-    title: "Total Revenue",
-    value: "$293,800",
-    change: "+23.5%",
-    changeType: "positive" as const,
-    icon: DollarSign,
-    color: "bg-green-500",
-  },
-  {
-    title: "Total Enrollments",
-    value: "4,923",
-    change: "+18.2%",
-    changeType: "positive" as const,
-    icon: TrendingUp,
-    color: "bg-blue-500",
-  },
-  {
-    title: "Active Users",
-    value: "2,520",
-    change: "+12.8%",
-    changeType: "positive" as const,
-    icon: Users,
-    color: "bg-violet-500",
-  },
-  {
-    title: "Completion Rate",
-    value: "76.4%",
-    change: "-2.1%",
-    changeType: "negative" as const,
-    icon: BookOpen,
-    color: "bg-amber-500",
-  },
-];
+interface EnrollmentsByStatus {
+  _id: string;
+  count: number;
+}
 
-function StatCard({ stat }: { stat: (typeof stats)[0] }) {
-  const Icon = stat.icon;
-  const isPositive = stat.changeType === "positive";
+interface RevenueData {
+  revenueByDay: RevenueByDay[];
+  revenueByCourse: RevenueByCourse[];
+  revenueByProvider: { _id: string; revenue: number; count: number }[];
+  totals: {
+    totalRevenue: number;
+    totalTransactions: number;
+    avgTransactionValue: number;
+  };
+}
 
+interface EnrollmentData {
+  enrollmentsByDay: EnrollmentsByDay[];
+  enrollmentsByStatus: EnrollmentsByStatus[];
+  topCourses: TopCourse[];
+  completionRate: number;
+}
+
+// Color palette for pie chart
+const COLORS = ["#6366f1", "#f59e0b", "#10b981", "#ec4899", "#64748b", "#3b82f6", "#8b5cf6"];
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ElementType;
+  color: string;
+  isLoading?: boolean;
+}
+
+function StatCard({ title, value, icon: Icon, color, isLoading }: StatCardProps) {
   return (
     <Card>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-muted-foreground">{stat.title}</p>
-            <p className="text-2xl font-bold mt-1">{stat.value}</p>
-            <div className="flex items-center gap-1 mt-1">
-              {isPositive ? (
-                <ArrowUpRight className="h-4 w-4 text-green-600" />
-              ) : (
-                <ArrowDownRight className="h-4 w-4 text-red-600" />
-              )}
-              <span
-                className={`text-sm ${
-                  isPositive ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {stat.change}
-              </span>
-              <span className="text-sm text-muted-foreground">vs last period</span>
-            </div>
+            <p className="text-sm text-muted-foreground">{title}</p>
+            {isLoading ? (
+              <Skeleton className="h-8 w-24 mt-1" />
+            ) : (
+              <p className="text-2xl font-bold mt-1">{value}</p>
+            )}
           </div>
-          <div
-            className={`h-12 w-12 rounded-lg ${stat.color} flex items-center justify-center`}
-          >
+          <div className={`h-12 w-12 rounded-lg ${color} flex items-center justify-center`}>
             <Icon className="h-6 w-6 text-white" />
           </div>
         </div>
@@ -162,7 +132,79 @@ function StatCard({ stat }: { stat: (typeof stats)[0] }) {
 }
 
 export default function AnalyticsPage() {
-  const [dateRange, setDateRange] = useState("12months");
+  const [dateRange, setDateRange] = useState("30");
+
+  // Fetch overview analytics
+  const { data: overviewResponse, isLoading: overviewLoading } = useQuery({
+    queryKey: ["admin-overview"],
+    queryFn: () => adminApi.getOverview(),
+  });
+
+  // Fetch revenue analytics
+  const { data: revenueResponse, isLoading: revenueLoading } = useQuery({
+    queryKey: ["admin-revenue", dateRange],
+    queryFn: () => adminApi.getRevenueAnalytics(),
+  });
+
+  // Fetch enrollment analytics  
+  const { data: enrollmentResponse, isLoading: enrollmentLoading } = useQuery({
+    queryKey: ["admin-enrollments", dateRange],
+    queryFn: () => adminApi.getEnrollmentAnalytics(),
+  });
+
+  const overview: OverviewAnalytics | undefined = overviewResponse?.data;
+  const revenueData = revenueResponse?.data as RevenueData | undefined;
+  const enrollmentData = enrollmentResponse?.data as EnrollmentData | undefined;
+
+  // Transform data for charts
+  const revenueChartData = revenueData?.revenueByDay?.map((item) => ({
+    date: item._id,
+    revenue: item.revenue,
+  })) || [];
+
+  const enrollmentChartData = enrollmentData?.enrollmentsByDay?.map((item) => ({
+    date: item._id,
+    enrollments: item.count,
+  })) || [];
+
+  const statusChartData = enrollmentData?.enrollmentsByStatus?.map((item) => ({
+    name: item._id?.charAt(0).toUpperCase() + item._id?.slice(1) || 'Unknown',
+    value: item.count,
+  })) || [];
+
+  const topCoursesChartData = enrollmentData?.topCourses?.map((item) => ({
+    name: item.title?.length > 25 ? item.title.substring(0, 25) + '...' : item.title,
+    enrollments: item.enrollments,
+  })) || [];
+
+  const stats = [
+    {
+      title: "Total Revenue",
+      value: formatCurrency(overview?.revenue?.total || 0, "USD"),
+      icon: DollarSign,
+      color: "bg-green-500",
+    },
+    {
+      title: "Total Enrollments",
+      value: overview?.enrollments?.total?.toLocaleString() || "0",
+      icon: TrendingUp,
+      color: "bg-blue-500",
+    },
+    {
+      title: "New Users",
+      value: overview?.users?.newThisMonth?.toLocaleString() || "0",
+      icon: Users,
+      color: "bg-violet-500",
+    },
+    {
+      title: "Completion Rate",
+      value: `${enrollmentData?.completionRate || 0}%`,
+      icon: BookOpen,
+      color: "bg-amber-500",
+    },
+  ];
+
+  const isLoading = overviewLoading || revenueLoading || enrollmentLoading;
 
   return (
     <div className="space-y-6">
@@ -181,11 +223,10 @@ export default function AnalyticsPage() {
               <SelectValue placeholder="Select range" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="7days">Last 7 days</SelectItem>
-              <SelectItem value="30days">Last 30 days</SelectItem>
-              <SelectItem value="3months">Last 3 months</SelectItem>
-              <SelectItem value="12months">Last 12 months</SelectItem>
-              <SelectItem value="all">All time</SelectItem>
+              <SelectItem value="7">Last 7 days</SelectItem>
+              <SelectItem value="30">Last 30 days</SelectItem>
+              <SelectItem value="90">Last 3 months</SelectItem>
+              <SelectItem value="365">Last 12 months</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline">
@@ -198,15 +239,22 @@ export default function AnalyticsPage() {
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <StatCard key={stat.title} stat={stat} />
+          <StatCard
+            key={stat.title}
+            title={stat.title}
+            value={stat.value}
+            icon={stat.icon}
+            color={stat.color}
+            isLoading={isLoading}
+          />
         ))}
       </div>
 
       {/* Charts */}
       <Tabs defaultValue="revenue" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="revenue">Revenue & Enrollments</TabsTrigger>
-          <TabsTrigger value="users">User Growth</TabsTrigger>
+          <TabsTrigger value="revenue">Revenue</TabsTrigger>
+          <TabsTrigger value="enrollments">Enrollments</TabsTrigger>
           <TabsTrigger value="courses">Course Performance</TabsTrigger>
         </TabsList>
 
@@ -215,44 +263,224 @@ export default function AnalyticsPage() {
             {/* Revenue Chart */}
             <Card className="lg:col-span-2">
               <CardHeader>
-                <CardTitle>Revenue Overview</CardTitle>
+                <CardTitle>Revenue Over Time</CardTitle>
                 <CardDescription>
-                  Monthly revenue and enrollment trends
+                  Daily revenue for the selected period
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[350px]">
+                {revenueLoading ? (
+                  <Skeleton className="h-[350px] w-full" />
+                ) : revenueChartData.length === 0 ? (
+                  <div className="h-[350px] flex items-center justify-center text-muted-foreground">
+                    No revenue data available
+                  </div>
+                ) : (
+                  <div className="h-[350px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={revenueChartData}>
+                        <defs>
+                          <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis
+                          dataKey="date"
+                          className="text-xs"
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <YAxis
+                          className="text-xs"
+                          tickLine={false}
+                          axisLine={false}
+                          tickFormatter={(value) => `$${value / 1000}k`}
+                        />
+                        <Tooltip
+                          content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                              return (
+                                <div className="bg-background border rounded-lg shadow-lg p-3">
+                                  <p className="font-medium">{payload[0].payload.date}</p>
+                                  <p className="text-sm text-muted-foreground">
+                                    Revenue:{" "}
+                                    <span className="font-medium text-foreground">
+                                      {formatCurrency(payload[0].value as number, "USD")}
+                                    </span>
+                                  </p>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="revenue"
+                          stroke="#6366f1"
+                          strokeWidth={2}
+                          fillOpacity={1}
+                          fill="url(#colorRevenue)"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Enrollment Status Distribution */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Enrollment Status</CardTitle>
+                <CardDescription>Distribution by status</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {enrollmentLoading ? (
+                  <Skeleton className="h-[250px] w-full" />
+                ) : statusChartData.length === 0 ? (
+                  <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                    No data available
+                  </div>
+                ) : (
+                  <>
+                    <div className="h-[250px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={statusChartData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                          >
+                            {statusChartData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            content={({ active, payload }) => {
+                              if (active && payload && payload.length) {
+                                return (
+                                  <div className="bg-background border rounded-lg shadow-lg p-3">
+                                    <p className="font-medium">{payload[0].name}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {payload[0].value} enrollments
+                                    </p>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mt-4">
+                      {statusChartData.map((item, index) => (
+                        <div key={item.name} className="flex items-center gap-2">
+                          <div
+                            className="h-3 w-3 rounded-full"
+                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {item.name} ({item.value})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Revenue summary cards */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {revenueLoading ? (
+                  <Skeleton className="h-8 w-24" />
+                ) : (
+                  <div className="text-2xl font-bold">
+                    {formatCurrency(revenueData?.totals?.totalRevenue || 0, "USD")}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {revenueLoading ? (
+                  <Skeleton className="h-8 w-24" />
+                ) : (
+                  <div className="text-2xl font-bold">
+                    {revenueData?.totals?.totalTransactions || 0}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Avg. Transaction</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {revenueLoading ? (
+                  <Skeleton className="h-8 w-24" />
+                ) : (
+                  <div className="text-2xl font-bold">
+                    {formatCurrency(revenueData?.totals?.avgTransactionValue || 0, "USD")}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="enrollments" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Enrollments Over Time</CardTitle>
+              <CardDescription>Daily enrollment numbers</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {enrollmentLoading ? (
+                <Skeleton className="h-[400px] w-full" />
+              ) : enrollmentChartData.length === 0 ? (
+                <div className="h-[400px] flex items-center justify-center text-muted-foreground">
+                  No enrollment data available
+                </div>
+              ) : (
+                <div className="h-[400px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={revenueData}>
-                      <defs>
-                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
+                    <BarChart data={enrollmentChartData}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                       <XAxis
-                        dataKey="month"
+                        dataKey="date"
                         className="text-xs"
                         tickLine={false}
                         axisLine={false}
                       />
-                      <YAxis
-                        className="text-xs"
-                        tickLine={false}
-                        axisLine={false}
-                        tickFormatter={(value) => `$${value / 1000}k`}
-                      />
+                      <YAxis className="text-xs" tickLine={false} axisLine={false} />
                       <Tooltip
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
                             return (
                               <div className="bg-background border rounded-lg shadow-lg p-3">
-                                <p className="font-medium">{payload[0].payload.month}</p>
+                                <p className="font-medium">{payload[0].payload.date}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  Revenue:{" "}
+                                  Enrollments:{" "}
                                   <span className="font-medium text-foreground">
-                                    {formatCurrency(payload[0].value as number, "USD")}
+                                    {payload[0].value}
                                   </span>
                                 </p>
                               </div>
@@ -261,178 +489,11 @@ export default function AnalyticsPage() {
                           return null;
                         }}
                       />
-                      <Area
-                        type="monotone"
-                        dataKey="revenue"
-                        stroke="#6366f1"
-                        strokeWidth={2}
-                        fillOpacity={1}
-                        fill="url(#colorRevenue)"
-                      />
-                    </AreaChart>
+                      <Bar dataKey="enrollments" fill="#6366f1" radius={[4, 4, 0, 0]} />
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Category Distribution */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Category Distribution</CardTitle>
-                <CardDescription>Courses by category</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[250px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={categoryDistribution}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {categoryDistribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            return (
-                              <div className="bg-background border rounded-lg shadow-lg p-3">
-                                <p className="font-medium">{payload[0].name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {payload[0].value}% of courses
-                                </p>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="grid grid-cols-2 gap-2 mt-4">
-                  {categoryDistribution.map((item) => (
-                    <div key={item.name} className="flex items-center gap-2">
-                      <div
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: item.color }}
-                      />
-                      <span className="text-xs text-muted-foreground">
-                        {item.name} ({item.value}%)
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Enrollments Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Enrollments Trend</CardTitle>
-              <CardDescription>Monthly enrollment numbers</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={revenueData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis
-                      dataKey="month"
-                      className="text-xs"
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis className="text-xs" tickLine={false} axisLine={false} />
-                    <Tooltip
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-background border rounded-lg shadow-lg p-3">
-                              <p className="font-medium">{payload[0].payload.month}</p>
-                              <p className="text-sm text-muted-foreground">
-                                Enrollments:{" "}
-                                <span className="font-medium text-foreground">
-                                  {payload[0].value}
-                                </span>
-                              </p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Bar dataKey="enrollments" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="users" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>User Growth</CardTitle>
-              <CardDescription>New and active users over time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={userGrowthData}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis
-                      dataKey="month"
-                      className="text-xs"
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis className="text-xs" tickLine={false} axisLine={false} />
-                    <Tooltip
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-background border rounded-lg shadow-lg p-3">
-                              <p className="font-medium">{payload[0].payload.month}</p>
-                              <p className="text-sm text-blue-600">
-                                New Users: {payload[0].value}
-                              </p>
-                              <p className="text-sm text-green-600">
-                                Active Users: {payload[1].value}
-                              </p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="newUsers"
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      name="New Users"
-                      dot={false}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="activeUsers"
-                      stroke="#10b981"
-                      strokeWidth={2}
-                      name="Active Users"
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -441,49 +502,83 @@ export default function AnalyticsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Top Performing Courses</CardTitle>
-              <CardDescription>Courses ranked by enrollment and revenue</CardDescription>
+              <CardDescription>Courses ranked by enrollment</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={coursePerformanceData} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis type="number" className="text-xs" tickLine={false} axisLine={false} />
-                    <YAxis
-                      type="category"
-                      dataKey="name"
-                      className="text-xs"
-                      tickLine={false}
-                      axisLine={false}
-                      width={150}
-                    />
-                    <Tooltip
-                      content={({ active, payload }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-background border rounded-lg shadow-lg p-3">
-                              <p className="font-medium">{payload[0].payload.name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                Enrollments: {payload[0].payload.enrollments}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Revenue: {formatCurrency(payload[0].payload.revenue, "USD")}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                Completion: {payload[0].payload.completion}%
-                              </p>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
-                    <Bar dataKey="enrollments" fill="#6366f1" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              {enrollmentLoading ? (
+                <Skeleton className="h-[400px] w-full" />
+              ) : topCoursesChartData.length === 0 ? (
+                <div className="h-[400px] flex items-center justify-center text-muted-foreground">
+                  No course data available
+                </div>
+              ) : (
+                <div className="h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={topCoursesChartData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis type="number" className="text-xs" tickLine={false} axisLine={false} />
+                      <YAxis
+                        type="category"
+                        dataKey="name"
+                        className="text-xs"
+                        tickLine={false}
+                        axisLine={false}
+                        width={150}
+                      />
+                      <Tooltip
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            return (
+                              <div className="bg-background border rounded-lg shadow-lg p-3">
+                                <p className="font-medium">{payload[0].payload.name}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  Enrollments: {payload[0].payload.enrollments}
+                                </p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Bar dataKey="enrollments" fill="#6366f1" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </CardContent>
           </Card>
+
+          {/* Revenue by Course */}
+          {revenueData?.revenueByCourse && revenueData.revenueByCourse.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Revenue by Course</CardTitle>
+                <CardDescription>Top courses by revenue generated</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {revenueData.revenueByCourse.map((course, index) => (
+                    <div key={course.courseId} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-medium">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{course.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {course.transactions} transactions
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold">{formatCurrency(course.revenue, "USD")}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>

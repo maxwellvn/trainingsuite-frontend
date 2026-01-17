@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import {
   Users,
@@ -7,16 +8,17 @@ import {
   DollarSign,
   TrendingUp,
   ArrowUpRight,
-  ArrowDownRight,
   MoreHorizontal,
   Eye,
   UserPlus,
   ShoppingCart,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -31,95 +33,33 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { formatCurrency, getInitials } from "@/lib/utils";
+import { adminApi } from "@/lib/api/admin";
+import { coursesApi } from "@/lib/api/courses";
+import { formatCurrency, getInitials, formatDate } from "@/lib/utils";
+import type { OverviewAnalytics, Course } from "@/types";
 
-// Mock data for stats
-const stats = [
-  {
-    title: "Total Users",
-    value: "12,543",
-    change: "+12.5%",
-    changeType: "positive" as const,
-    icon: Users,
-    color: "bg-blue-500",
-  },
-  {
-    title: "Total Courses",
-    value: "284",
-    change: "+8.2%",
-    changeType: "positive" as const,
-    icon: BookOpen,
-    color: "bg-violet-500",
-  },
-  {
-    title: "Revenue",
-    value: "$48,234",
-    change: "+23.1%",
-    changeType: "positive" as const,
-    icon: DollarSign,
-    color: "bg-green-500",
-  },
-  {
-    title: "Enrollments",
-    value: "3,421",
-    change: "-2.4%",
-    changeType: "negative" as const,
-    icon: TrendingUp,
-    color: "bg-amber-500",
-  },
-];
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ElementType;
+  color: string;
+  isLoading?: boolean;
+}
 
-// Mock recent enrollments
-const recentEnrollments = [
-  { id: 1, user: "John Doe", email: "john@example.com", course: "React Masterclass", price: 99, date: "2 min ago" },
-  { id: 2, user: "Jane Smith", email: "jane@example.com", course: "Node.js Advanced", price: 79, date: "15 min ago" },
-  { id: 3, user: "Mike Johnson", email: "mike@example.com", course: "TypeScript Basics", price: 49, date: "1 hour ago" },
-  { id: 4, user: "Sarah Williams", email: "sarah@example.com", course: "Python for Data Science", price: 129, date: "2 hours ago" },
-  { id: 5, user: "Chris Brown", email: "chris@example.com", course: "AWS Fundamentals", price: 89, date: "3 hours ago" },
-];
-
-// Mock recent activities
-const recentActivities = [
-  { id: 1, type: "user", message: "New user registered", user: "Alex Martinez", time: "5 min ago" },
-  { id: 2, type: "course", message: "Course published", user: "Sarah Chen", course: "Vue.js 3 Complete Guide", time: "20 min ago" },
-  { id: 3, type: "enrollment", message: "New enrollment", user: "David Kim", course: "Docker Mastery", time: "1 hour ago" },
-  { id: 4, type: "review", message: "New 5-star review", user: "Emma Wilson", course: "GraphQL Fundamentals", time: "2 hours ago" },
-  { id: 5, type: "payment", message: "Payment received", amount: "$129", time: "3 hours ago" },
-];
-
-// Mock top courses
-const topCourses = [
-  { id: 1, title: "React Masterclass", enrollments: 1234, revenue: 12340, rating: 4.9 },
-  { id: 2, title: "Node.js Advanced", enrollments: 987, revenue: 9870, rating: 4.8 },
-  { id: 3, title: "Python for Beginners", enrollments: 856, revenue: 8560, rating: 4.7 },
-  { id: 4, title: "AWS Fundamentals", enrollments: 743, revenue: 7430, rating: 4.9 },
-  { id: 5, title: "TypeScript Deep Dive", enrollments: 621, revenue: 6210, rating: 4.6 },
-];
-
-function StatCard({ stat }: { stat: typeof stats[0] }) {
-  const Icon = stat.icon;
-  const isPositive = stat.changeType === "positive";
-
+function StatCard({ title, value, icon: Icon, color, isLoading }: StatCardProps) {
   return (
     <Card>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm text-muted-foreground">{stat.title}</p>
-            <p className="text-2xl font-bold mt-1">{stat.value}</p>
-            <div className="flex items-center gap-1 mt-1">
-              {isPositive ? (
-                <ArrowUpRight className="h-4 w-4 text-green-600" />
-              ) : (
-                <ArrowDownRight className="h-4 w-4 text-red-600" />
-              )}
-              <span className={`text-sm ${isPositive ? "text-green-600" : "text-red-600"}`}>
-                {stat.change}
-              </span>
-              <span className="text-sm text-muted-foreground">vs last month</span>
-            </div>
+            <p className="text-sm text-muted-foreground">{title}</p>
+            {isLoading ? (
+              <Skeleton className="h-8 w-24 mt-1" />
+            ) : (
+              <p className="text-2xl font-bold mt-1">{value}</p>
+            )}
           </div>
-          <div className={`h-12 w-12 rounded-lg ${stat.color} flex items-center justify-center`}>
+          <div className={`h-12 w-12 rounded-lg ${color} flex items-center justify-center`}>
             <Icon className="h-6 w-6 text-white" />
           </div>
         </div>
@@ -128,152 +68,190 @@ function StatCard({ stat }: { stat: typeof stats[0] }) {
   );
 }
 
-function ActivityIcon({ type }: { type: string }) {
-  switch (type) {
-    case "user":
-      return <UserPlus className="h-4 w-4 text-blue-600" />;
-    case "course":
-      return <BookOpen className="h-4 w-4 text-violet-600" />;
-    case "enrollment":
-      return <ShoppingCart className="h-4 w-4 text-green-600" />;
-    case "payment":
-      return <DollarSign className="h-4 w-4 text-amber-600" />;
-    default:
-      return <Eye className="h-4 w-4 text-gray-600" />;
-  }
-}
-
 export default function AdminDashboardPage() {
+  // Fetch overview analytics
+  const { data: analyticsResponse, isLoading: analyticsLoading } = useQuery({
+    queryKey: ["admin-overview"],
+    queryFn: () => adminApi.getOverview(),
+  });
+
+  // Fetch top courses
+  const { data: coursesResponse, isLoading: coursesLoading } = useQuery({
+    queryKey: ["admin-top-courses"],
+    queryFn: () => coursesApi.getAll({ limit: 5, sort: "enrollmentCount", order: "desc" }),
+  });
+
+  const analytics: OverviewAnalytics | undefined = analyticsResponse?.data;
+  const topCourses = coursesResponse?.data || [];
+
+  const stats = [
+    {
+      title: "Total Users",
+      value: analytics?.users?.total?.toLocaleString() || "0",
+      icon: Users,
+      color: "bg-blue-500",
+    },
+    {
+      title: "Total Courses",
+      value: analytics?.courses?.total?.toString() || "0",
+      icon: BookOpen,
+      color: "bg-violet-500",
+    },
+    {
+      title: "Revenue",
+      value: formatCurrency(analytics?.revenue?.total || 0, "USD"),
+      icon: DollarSign,
+      color: "bg-green-500",
+    },
+    {
+      title: "Enrollments",
+      value: analytics?.enrollments?.total?.toLocaleString() || "0",
+      icon: TrendingUp,
+      color: "bg-amber-500",
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <StatCard key={stat.title} stat={stat} />
+          <StatCard
+            key={stat.title}
+            title={stat.title}
+            value={stat.value}
+            icon={stat.icon}
+            color={stat.color}
+            isLoading={analyticsLoading}
+          />
         ))}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Revenue Chart Placeholder */}
+      {/* Quick Stats Row */}
+      <div className="grid gap-6 lg:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>Revenue Overview</CardTitle>
-            <CardDescription>Monthly revenue for the past 6 months</CardDescription>
+            <CardTitle className="text-lg">New Users</CardTitle>
+            <CardDescription>This month</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px] flex items-center justify-center bg-muted/50 rounded-lg">
-              <p className="text-muted-foreground">Chart coming soon</p>
-            </div>
+            {analyticsLoading ? (
+              <Skeleton className="h-10 w-20" />
+            ) : (
+              <div className="text-3xl font-bold text-blue-600">
+                {analytics?.users?.newThisMonth || 0}
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Enrollments Chart Placeholder */}
         <Card>
           <CardHeader>
-            <CardTitle>Enrollment Trends</CardTitle>
-            <CardDescription>Daily enrollments for the past 30 days</CardDescription>
+            <CardTitle className="text-lg">Active Enrollments</CardTitle>
+            <CardDescription>Currently learning</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px] flex items-center justify-center bg-muted/50 rounded-lg">
-              <p className="text-muted-foreground">Chart coming soon</p>
-            </div>
+            {analyticsLoading ? (
+              <Skeleton className="h-10 w-20" />
+            ) : (
+              <div className="text-3xl font-bold text-green-600">
+                {analytics?.enrollments?.active || 0}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Monthly Revenue</CardTitle>
+            <CardDescription>This month</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {analyticsLoading ? (
+              <Skeleton className="h-10 w-20" />
+            ) : (
+              <div className="text-3xl font-bold text-amber-600">
+                {formatCurrency(analytics?.revenue?.thisMonth || 0, "USD")}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Tables Row */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Recent Enrollments */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Enrollments</CardTitle>
-              <CardDescription>Latest course enrollments</CardDescription>
-            </div>
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/admin/enrollments">View All</Link>
-            </Button>
+      {/* Additional Stats */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Platform Overview</CardTitle>
+            <CardDescription>Key metrics at a glance</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Course</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentEnrollments.map((enrollment) => (
-                  <TableRow key={enrollment.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback className="text-xs">
-                            {getInitials(enrollment.user)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium text-sm">{enrollment.user}</p>
-                          <p className="text-xs text-muted-foreground">{enrollment.email}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm">{enrollment.course}</TableCell>
-                    <TableCell className="text-sm font-medium">
-                      {formatCurrency(enrollment.price, "USD")}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {enrollment.date}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>View Details</DropdownMenuItem>
-                          <DropdownMenuItem>View User</DropdownMenuItem>
-                          <DropdownMenuItem>View Course</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
+            {analyticsLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex justify-between">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-2 border-b">
+                  <span className="text-muted-foreground">Published Courses</span>
+                  <span className="font-semibold">{analytics?.courses?.published || 0}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b">
+                  <span className="text-muted-foreground">Completed Enrollments</span>
+                  <span className="font-semibold">{analytics?.enrollments?.completed || 0}</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b">
+                  <span className="text-muted-foreground">Upcoming Sessions</span>
+                  <span className="font-semibold">{analytics?.liveSessions?.upcoming || 0}</span>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-muted-foreground">Live Sessions Now</span>
+                  <Badge variant={analytics?.liveSessions?.live ? "default" : "secondary"}>
+                    {analytics?.liveSessions?.live || 0}
+                  </Badge>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
+        {/* Quick Actions */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest platform activity</CardDescription>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Common administrative tasks</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3">
-                  <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                    <ActivityIcon type={activity.type} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm">{activity.message}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {activity.user && <span>{activity.user}</span>}
-                      {activity.course && <span> • {activity.course}</span>}
-                      {activity.amount && <span> • {activity.amount}</span>}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{activity.time}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 gap-3">
+              <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" asChild>
+                <Link href="/admin/users">
+                  <Users className="h-6 w-6" />
+                  <span className="text-sm">Manage Users</span>
+                </Link>
+              </Button>
+              <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" asChild>
+                <Link href="/admin/courses">
+                  <BookOpen className="h-6 w-6" />
+                  <span className="text-sm">Manage Courses</span>
+                </Link>
+              </Button>
+              <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" asChild>
+                <Link href="/admin/categories">
+                  <TrendingUp className="h-6 w-6" />
+                  <span className="text-sm">Categories</span>
+                </Link>
+              </Button>
+              <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" asChild>
+                <Link href="/admin/analytics">
+                  <DollarSign className="h-6 w-6" />
+                  <span className="text-sm">Analytics</span>
+                </Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -284,41 +262,92 @@ export default function AdminDashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Top Performing Courses</CardTitle>
-            <CardDescription>Courses with highest enrollments this month</CardDescription>
+            <CardDescription>Courses with highest enrollments</CardDescription>
           </div>
           <Button variant="outline" size="sm" asChild>
             <Link href="/admin/courses">Manage Courses</Link>
           </Button>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Course</TableHead>
-                <TableHead className="text-right">Enrollments</TableHead>
-                <TableHead className="text-right">Revenue</TableHead>
-                <TableHead className="text-right">Rating</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {topCourses.map((course) => (
-                <TableRow key={course.id}>
-                  <TableCell className="font-medium">{course.title}</TableCell>
-                  <TableCell className="text-right">{course.enrollments.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(course.revenue, "USD")}</TableCell>
-                  <TableCell className="text-right">
-                    <Badge variant="secondary">{course.rating}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
+          {coursesLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-10 w-10 rounded" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-[200px]" />
+                    <Skeleton className="h-3 w-[100px]" />
+                  </div>
+                </div>
               ))}
-            </TableBody>
-          </Table>
+            </div>
+          ) : topCourses.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <BookOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p>No courses yet</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Course</TableHead>
+                  <TableHead className="text-right">Enrollments</TableHead>
+                  <TableHead className="text-right">Price</TableHead>
+                  <TableHead className="text-right">Rating</TableHead>
+                  <TableHead className="w-[50px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {topCourses.map((course: Course) => (
+                  <TableRow key={course._id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-14 rounded bg-muted flex items-center justify-center overflow-hidden">
+                          {course.thumbnail ? (
+                            <img
+                              src={course.thumbnail}
+                              alt={course.title}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <BookOpen className="h-5 w-5 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium">{course.title}</p>
+                          <Badge variant={course.status === "published" ? "default" : "secondary"} className="text-xs">
+                            {course.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {(course.enrollmentCount || 0).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {course.isFree ? (
+                        <Badge variant="secondary">Free</Badge>
+                      ) : (
+                        formatCurrency(course.price, course.currency || "USD")
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Badge variant="secondary">
+                        {course.averageRating?.toFixed(1) || "N/A"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                        <Link href={`/courses/${course.slug}`}>
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

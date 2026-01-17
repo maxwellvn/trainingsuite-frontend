@@ -48,24 +48,6 @@ import { coursesApi } from "@/lib/api/courses";
 import { enrollmentsApi } from "@/lib/api/enrollments";
 import type { Course, EnrollmentWithCourse, User } from "@/types";
 
-// Generate mock data for charts
-const generateEnrollmentData = () => {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-  return months.map((month) => ({
-    name: month,
-    enrollments: Math.floor(Math.random() * 100) + 20,
-    completions: Math.floor(Math.random() * 50) + 10,
-  }));
-};
-
-const generateRevenueData = () => {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-  return months.map((month) => ({
-    name: month,
-    revenue: Math.floor(Math.random() * 5000) + 1000,
-  }));
-};
-
 const COLORS = ["#7c3aed", "#10b981", "#f59e0b", "#ef4444", "#3b82f6"];
 
 export default function InstructorAnalyticsPage() {
@@ -93,8 +75,8 @@ export default function InstructorAnalyticsPage() {
     totalRevenue: courses.reduce((acc, c) => acc + (c.price || 0) * (c.enrollmentCount || 0), 0),
     completionRate: enrollments.length > 0
       ? Math.round(
-          (enrollments.filter((e) => e.status === "completed").length / enrollments.length) * 100
-        )
+        (enrollments.filter((e) => e.status === "completed").length / enrollments.length) * 100
+      )
       : 0,
     averageProgress: enrollments.length > 0
       ? Math.round(enrollments.reduce((acc, e) => acc + (e.progress || 0), 0) / enrollments.length)
@@ -117,8 +99,18 @@ export default function InstructorAnalyticsPage() {
     { name: "Archived", value: courses.filter((c) => c.status === "archived").length },
   ].filter((item) => item.value > 0);
 
-  const enrollmentData = generateEnrollmentData();
-  const revenueData = generateRevenueData();
+  // Generate enrollment data from actual courses
+  const enrollmentData = courses.slice(0, 6).map((course, i) => ({
+    name: course.title.substring(0, 10) + (course.title.length > 10 ? '...' : ''),
+    enrollments: course.enrollmentCount || 0,
+    completions: Math.round((course.enrollmentCount || 0) * (stats.completionRate / 100)),
+  }));
+
+  // Generate revenue data from actual courses
+  const revenueData = courses.slice(0, 6).map((course) => ({
+    name: course.title.substring(0, 10) + (course.title.length > 10 ? '...' : ''),
+    revenue: (course.price || 0) * (course.enrollmentCount || 0),
+  }));
 
   if (isLoading) {
     return (
@@ -182,9 +174,8 @@ export default function InstructorAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalStudents.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center">
-              <ArrowUpRight className="h-3 w-3 text-green-600 mr-1" />
-              <span className="text-green-600">+12%</span> from last period
+            <p className="text-xs text-muted-foreground mt-1">
+              Unique students enrolled
             </p>
           </CardContent>
         </Card>
@@ -198,9 +189,8 @@ export default function InstructorAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalEnrollments.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center">
-              <ArrowUpRight className="h-3 w-3 text-green-600 mr-1" />
-              <span className="text-green-600">+8%</span> from last period
+            <p className="text-xs text-muted-foreground mt-1">
+              Total course enrollments
             </p>
           </CardContent>
         </Card>
@@ -214,9 +204,8 @@ export default function InstructorAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${stats.totalRevenue.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center">
-              <ArrowUpRight className="h-3 w-3 text-green-600 mr-1" />
-              <span className="text-green-600">+15%</span> from last period
+            <p className="text-xs text-muted-foreground mt-1">
+              Estimated revenue
             </p>
           </CardContent>
         </Card>
@@ -230,9 +219,8 @@ export default function InstructorAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.completionRate}%</div>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center">
-              <ArrowDownRight className="h-3 w-3 text-red-500 mr-1" />
-              <span className="text-red-500">-2%</span> from last period
+            <p className="text-xs text-muted-foreground mt-1">
+              Course completion rate
             </p>
           </CardContent>
         </Card>

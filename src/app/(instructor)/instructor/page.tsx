@@ -69,7 +69,7 @@ export default function InstructorDashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalCourses}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              <span className="text-green-600">+2</span> this month
+              Published and draft courses
             </p>
           </CardContent>
         </Card>
@@ -84,7 +84,7 @@ export default function InstructorDashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalStudents.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              <span className="text-green-600">+12%</span> from last month
+              Across all courses
             </p>
           </CardContent>
         </Card>
@@ -101,7 +101,7 @@ export default function InstructorDashboardPage() {
               ${stats.totalRevenue.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              <span className="text-green-600">+8%</span> from last month
+              Estimated total
             </p>
           </CardContent>
         </Card>

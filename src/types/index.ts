@@ -385,17 +385,27 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 
 // Analytics Types
 export interface OverviewAnalytics {
-  totalUsers: number;
-  newUsers: number;
-  totalCourses: number;
-  publishedCourses: number;
-  totalEnrollments: number;
-  activeEnrollments: number;
-  completedEnrollments: number;
-  totalRevenue: number;
-  monthlyRevenue: number;
-  upcomingSessions: number;
-  liveSessions: number;
+  users: {
+    total: number;
+    newThisMonth: number;
+  };
+  courses: {
+    total: number;
+    published: number;
+  };
+  enrollments: {
+    total: number;
+    active: number;
+    completed: number;
+  };
+  revenue: {
+    total: number;
+    thisMonth: number;
+  };
+  liveSessions: {
+    upcoming: number;
+    live: number;
+  };
 }
 
 export interface CourseAnalytics {
