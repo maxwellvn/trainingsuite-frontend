@@ -1,0 +1,329 @@
+"use client";
+
+import { useState } from "react";
+import { useParams } from "next/navigation";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
+import {
+  MessageSquare,
+  ArrowLeft,
+  Pin,
+  Lock,
+  Eye,
+  Clock,
+  Reply,
+  MoreVertical,
+  Trash2,
+  Edit,
+  Loader2,
+  Send,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks";
+import { forumsApi } from "@/lib/api/forums";
+import { getInitials } from "@/lib/utils";
+import type { ForumPost, Comment, User } from "@/types";
+import { format, parseISO, formatDistanceToNow } from "date-fns";
+
+export default function PostDetailPage() {
+  const params = useParams();
+  const forumId = params.id as string;
+  const postId = params.postId as string;
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [newComment, setNewComment] = useState("");
+  const [replyTo, setReplyTo] = useState<Comment | null>(null);
+
+  const { data: postData, isLoading: postLoading } = useQuery({
+    queryKey: ["post", postId],
+    queryFn: () => forumsApi.getPost(postId),
+  });
+
+  const { data: commentsData, isLoading: commentsLoading } = useQuery({
+    queryKey: ["post-comments", postId],
+    queryFn: () => forumsApi.getComments(postId, 1, 100),
+  });
+
+  const createCommentMutation = useMutation({
+    mutationFn: ({ content, parentId }: { content: string; parentId?: string }) =>
+      forumsApi.createComment(postId, content, parentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["post-comments", postId] });
+      setNewComment("");
+      setReplyTo(null);
+      toast({ title: "Comment added!" });
+    },
+    onError: () => {
+      toast({ title: "Failed to add comment", variant: "destructive" });
+    },
+  });
+
+  const handleSubmitComment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim()) {
+      toast({ title: "Please enter a comment", variant: "destructive" });
+      return;
+    }
+    createCommentMutation.mutate({
+      content: newComment,
+      parentId: replyTo?._id,
+    });
+  };
+
+  const post = postData?.data;
+  const comments = commentsData?.data || [];
+
+  // Organize comments into threads
+  const rootComments = comments.filter((c) => !c.parent);
+  const childComments = comments.filter((c) => c.parent);
+
+  const getChildComments = (parentId: string) =>
+    childComments.filter((c) => c.parent === parentId);
+
+  const isLoading = postLoading || commentsLoading;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-64 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="text-center py-12">
+        <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+        <h2 className="text-lg font-medium">Post not found</h2>
+        <p className="text-muted-foreground mt-1">
+          This post may have been removed or doesn't exist.
+        </p>
+        <Button asChild className="mt-4">
+          <Link href={`/forums/${forumId}`}>Back to Forum</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const CommentCard = ({ comment, depth = 0 }: { comment: Comment; depth?: number }) => {
+    const isOwner = user?._id === (comment.user as User)?._id;
+    const replies = getChildComments(comment._id);
+
+    return (
+      <div className={depth > 0 ? "ml-8 border-l-2 border-muted pl-4" : ""}>
+        <div className="py-4">
+          <div className="flex items-start gap-3">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={comment.user?.avatar} />
+              <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                {getInitials(comment.user?.name || "?")}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-medium text-sm">{comment.user?.name || "Anonymous"}</span>
+                <span className="text-xs text-muted-foreground">
+                  {formatDistanceToNow(parseISO(comment.createdAt), { addSuffix: true })}
+                </span>
+                {comment.isEdited && (
+                  <span className="text-xs text-muted-foreground">(edited)</span>
+                )}
+              </div>
+              <p className="text-sm whitespace-pre-wrap">{comment.content}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => setReplyTo(comment)}
+                >
+                  <Reply className="h-3 w-3 mr-1" />
+                  Reply
+                </Button>
+                {isOwner && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                        <MoreVertical className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuItem>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        {replies.length > 0 && (
+          <div className="space-y-0">
+            {replies.map((reply) => (
+              <CommentCard key={reply._id} comment={reply} depth={depth + 1} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" asChild>
+          <Link href={`/forums/${forumId}`}>
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+        </Button>
+        <div className="flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            {post.isPinned && <Pin className="h-4 w-4 text-primary fill-primary" />}
+            {post.isLocked && <Lock className="h-4 w-4 text-muted-foreground" />}
+            <h1 className="text-2xl font-bold">{post.title}</h1>
+          </div>
+        </div>
+      </div>
+
+      {/* Post Content */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4">
+            <Avatar className="h-12 w-12">
+              <AvatarImage src={post.user?.avatar} />
+              <AvatarFallback className="bg-primary/10 text-primary">
+                {getInitials(post.user?.name || "?")}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="font-semibold">{post.user?.name || "Anonymous"}</span>
+                <span className="text-sm text-muted-foreground">
+                  {format(parseISO(post.createdAt), "MMM d, yyyy 'at' h:mm a")}
+                </span>
+              </div>
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <p className="whitespace-pre-wrap">{post.content}</p>
+              </div>
+              <div className="flex items-center gap-4 mt-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Eye className="h-4 w-4" />
+                  <span>{post.viewCount || 0} views</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <MessageSquare className="h-4 w-4" />
+                  <span>{comments.length} comments</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Comment Form */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg">
+            {replyTo ? `Reply to ${replyTo.user?.name}` : "Add a Comment"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {post.isLocked ? (
+            <div className="text-center py-4 text-muted-foreground">
+              <Lock className="h-8 w-8 mx-auto mb-2" />
+              <p>This discussion is locked and no longer accepting comments.</p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmitComment} className="space-y-3">
+              {replyTo && (
+                <div className="flex items-center justify-between p-2 bg-muted rounded-lg text-sm">
+                  <span>Replying to: "{replyTo.content.substring(0, 50)}..."</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setReplyTo(null)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+              <Textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Write your comment..."
+                rows={3}
+              />
+              <div className="flex justify-end">
+                <Button type="submit" disabled={createCommentMutation.isPending}>
+                  {createCommentMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Posting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Post Comment
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Comments */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">
+            Comments ({comments.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {comments.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p>No comments yet. Be the first to comment!</p>
+            </div>
+          ) : (
+            <div className="divide-y">
+              {rootComments.map((comment) => (
+                <CommentCard key={comment._id} comment={comment} />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
