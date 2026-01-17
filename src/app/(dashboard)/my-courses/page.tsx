@@ -169,20 +169,20 @@ export default function MyCoursesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const { data: enrollmentsResponse, isLoading } = useEnrollments();
 
-  const enrollments = enrollmentsResponse?.data || [];
+  const enrollments = (enrollmentsResponse?.data || []) as Enrollment[];
 
-  const filteredEnrollments = enrollments.filter((enrollment) => {
+  const filteredEnrollments = enrollments.filter((enrollment: Enrollment) => {
     const course = typeof enrollment.course === "object" ? enrollment.course : null;
     if (!course) return false;
     if (!searchQuery) return true;
-    return course.title.toLowerCase().includes(searchQuery.toLowerCase());
+    return (course as Course).title.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
   const activeEnrollments = filteredEnrollments.filter(
-    (e) => (e.progress || 0) < 100
+    (e: Enrollment) => (e.progress || 0) < 100
   );
   const completedEnrollments = filteredEnrollments.filter(
-    (e) => (e.progress || 0) >= 100
+    (e: Enrollment) => (e.progress || 0) >= 100
   );
 
   return (

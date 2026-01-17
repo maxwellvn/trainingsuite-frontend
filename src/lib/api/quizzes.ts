@@ -14,7 +14,7 @@ export const quizzesApi = {
     return response.data;
   },
 
-  submit: async (id: string, answers: { question: string; selectedAnswer: number }[]) => {
+  submit: async (id: string, answers: Record<string, string> | { question: string; selectedAnswer: number }[]) => {
     const response = await apiClient.post<ApiResponse<QuizAttempt>>(
       `/quizzes/${id}/submit`,
       { answers }

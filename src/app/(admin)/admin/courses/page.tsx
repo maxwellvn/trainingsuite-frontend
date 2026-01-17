@@ -52,7 +52,7 @@ import {
 import { formatCurrency } from "@/lib/utils";
 import { useCourses } from "@/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Course } from "@/types";
+import type { Course, CourseStatus } from "@/types";
 
 const statusColors: Record<string, string> = {
   published: "bg-green-100 text-green-800",
@@ -144,15 +144,16 @@ export default function CoursesPage() {
     page,
     limit: 10,
     search: searchQuery || undefined,
-    status: statusFilter !== "all" ? statusFilter : undefined,
+    status: statusFilter !== "all" ? (statusFilter as CourseStatus) : undefined,
   });
 
   const courses = (coursesResponse?.data || []) as Course[];
   const pagination = coursesResponse?.pagination;
 
   const filteredCourses = courses.filter((course) => {
-    const matchesCategory = categoryFilter === "all" || course.category === categoryFilter;
-    return matchesCategory;
+    if (categoryFilter === "all") return true;
+    const categoryId = typeof course.category === "object" ? course.category._id : course.category;
+    return categoryId === categoryFilter;
   });
 
   const toggleSelectAll = () => {

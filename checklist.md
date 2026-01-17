@@ -2,7 +2,7 @@
 
 > **Tech Stack:** Next.js 14+ (App Router), TypeScript, shadcn/ui, Tailwind CSS, React Query, Zustand
 > **Design Philosophy:** Modern, professional, clean - NOT generic AI-generated aesthetics
-
+-- always push to git upon every change  --- important
 ---
 
 ## Phase 1: Project Setup & Foundation
@@ -264,8 +264,8 @@
 ## Phase 11: Admin Dashboard
 - [x] Admin overview
   - [x] Platform statistics cards
-  - [ ] User growth chart
-  - [ ] Revenue chart
+  - [x] User growth chart
+  - [x] Revenue chart
   - [x] Recent enrollments
   - [ ] System health
 - [x] User management
@@ -274,15 +274,15 @@
   - [ ] User detail view
   - [x] Edit user roles
   - [x] Verify/unverify users
-- [ ] Course management (in progress)
-  - [ ] All courses table
-  - [ ] Approve/reject courses
-  - [ ] Feature courses
-  - [ ] Archive courses
-- [ ] Category management
-  - [ ] Categories table
-  - [ ] Add/edit/delete categories
-  - [ ] Category icons
+- [x] Course management
+  - [x] All courses table
+  - [x] Approve/reject courses
+  - [x] Feature courses
+  - [x] Archive courses
+- [x] Category management
+  - [x] Categories table
+  - [x] Add/edit/delete categories
+  - [x] Category icons
 - [ ] Announcement management
   - [ ] Announcements table
   - [ ] Create announcement
@@ -299,13 +299,13 @@
   - [ ] Stripe settings
   - [ ] Paystack settings
   - [ ] Default provider
-- [ ] Analytics dashboard
-  - [ ] User analytics
-  - [ ] Course analytics
-  - [ ] Enrollment analytics
-  - [ ] Revenue analytics
-  - [ ] Date range filters
-  - [ ] Export data
+- [x] Analytics dashboard
+  - [x] User analytics
+  - [x] Course analytics
+  - [x] Enrollment analytics
+  - [x] Revenue analytics
+  - [x] Date range filters
+  - [x] Export data
 
 ---
 
@@ -514,8 +514,7 @@ frontend-trainingsuite/
 | Phase 8: Community | 🔲 Not Started | |
 | Phase 9: Payments | 🔲 Not Started | |
 | Phase 10: Instructor | 🔲 Not Started | |
-| Phase 11: Admin | 🔄 In Progress | Admin layout, dashboard, user management |
-| Phase 11: Admin | 🔲 Not Started | |
+| Phase 11: Admin | 🔄 In Progress | Admin layout, dashboard, users, courses, categories, analytics |
 | Phase 12: Components | 🔲 Not Started | |
 | Phase 13: Polish | 🔲 Not Started | |
 | Phase 14: Testing | 🔲 Not Started | |

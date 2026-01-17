@@ -8,6 +8,7 @@ export interface User {
   role: UserRole;
   avatar?: string;
   bio?: string;
+  title?: string;
   phone?: string;
   isVerified: boolean;
   createdAt: string;
@@ -21,7 +22,7 @@ export interface AuthState {
 }
 
 // Course Types
-export type CourseStatus = "draft" | "published" | "archived";
+export type CourseStatus = "draft" | "published" | "pending" | "archived";
 export type CourseLevel = "beginner" | "intermediate" | "advanced";
 
 export interface Course {
@@ -31,20 +32,27 @@ export interface Course {
   slug: string;
   thumbnail?: string;
   previewVideo?: string;
-  instructor: User;
-  category: Category;
+  instructor: User | string;
+  category: Category | string;
   price: number;
-  isFree: boolean;
-  currency: string;
-  status: CourseStatus;
-  level: CourseLevel;
-  duration: number;
-  enrollmentCount: number;
-  rating: number;
-  ratingCount: number;
-  requirements: string[];
-  objectives: string[];
-  tags: string[];
+  originalPrice?: number;
+  isFree?: boolean;
+  isFeatured?: boolean;
+  currency?: string;
+  status?: CourseStatus;
+  level?: CourseLevel;
+  language?: string;
+  duration?: number;
+  enrollmentCount?: number;
+  rating?: number;
+  averageRating?: number;
+  ratingCount?: number;
+  requirements?: string[];
+  objectives?: string[];
+  learningOutcomes?: string[];
+  prerequisites?: string[];
+  targetAudience?: string[];
+  tags?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -60,6 +68,7 @@ export interface Module {
   description?: string;
   course: string;
   order: number;
+  lessons?: Lesson[];
   createdAt: string;
   updatedAt: string;
 }
@@ -76,6 +85,9 @@ export interface Lesson {
   content?: string;
   videoUrl?: string;
   videoDuration?: number;
+  duration?: number;
+  type?: "video" | "text" | "quiz";
+  materials?: unknown[];
   module: string;
   isFree: boolean;
   isPublished: boolean;
@@ -111,6 +123,7 @@ export interface Quiz {
   title: string;
   description?: string;
   lesson: string;
+  questions?: Question[];
   passingScore: number;
   timeLimit?: number;
   isPublished: boolean;
@@ -122,7 +135,7 @@ export interface Question {
   _id: string;
   question: string;
   options: string[];
-  correctAnswer: number;
+  correctAnswer: number | string;
   points: number;
   explanation?: string;
   order: number;
@@ -147,6 +160,7 @@ export interface Certificate {
   user: string | User;
   course: string | Course;
   certificateNumber: string;
+  certificateId?: string;
   certificateUrl: string;
   issuedAt: string;
   createdAt: string;
@@ -289,6 +303,7 @@ export interface Notification {
   message: string;
   link?: string;
   isRead: boolean;
+  read?: boolean;
   metadata?: Record<string, unknown>;
   createdAt: string;
 }
@@ -316,7 +331,9 @@ export interface Category {
   description?: string;
   slug: string;
   icon?: string;
+  color?: string;
   isActive: boolean;
+  courseCount?: number;
   createdAt: string;
   updatedAt: string;
 }

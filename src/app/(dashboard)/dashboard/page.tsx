@@ -179,22 +179,22 @@ export default function DashboardPage() {
     return <DashboardSkeleton />;
   }
 
-  const enrollments = enrollmentsResponse?.data || [];
+  const enrollments = (enrollmentsResponse?.data || []) as Enrollment[];
   const certificates = certificatesResponse?.data || [];
   const notifications = notificationsResponse?.data || [];
 
   const activeEnrollments = enrollments.filter(
-    (e) => e.status === "active" && (e.progress || 0) < 100
+    (e: Enrollment) => e.status === "active" && (e.progress || 0) < 100
   );
-  const completedCourses = enrollments.filter((e) => (e.progress || 0) >= 100).length;
+  const completedCourses = enrollments.filter((e: Enrollment) => (e.progress || 0) >= 100).length;
 
-  const totalLearningMinutes = enrollments.reduce((acc, e) => {
+  const totalLearningMinutes = enrollments.reduce((acc: number, e: Enrollment) => {
     const course = typeof e.course === "object" ? e.course : null;
-    return acc + (course?.duration || 0);
+    return acc + ((course as Course)?.duration || 0);
   }, 0);
 
   const avgProgress = enrollments.length > 0
-    ? Math.round(enrollments.reduce((acc, e) => acc + (e.progress || 0), 0) / enrollments.length)
+    ? Math.round(enrollments.reduce((acc: number, e: Enrollment) => acc + (e.progress || 0), 0) / enrollments.length)
     : 0;
 
   const stats = [
