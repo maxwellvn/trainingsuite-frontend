@@ -244,7 +244,7 @@ function LoadingSkeleton() {
 export default function QuizPage({
   params,
 }: {
-  params: Promise<{ id: string; quizId: string }>;
+  params: Promise<{ slug: string; quizId: string }>;
 }) {
   const resolvedParams = use(params);
   const router = useRouter();
@@ -272,7 +272,7 @@ export default function QuizPage({
           </p>
           <Button
             className="mt-4"
-            onClick={() => router.push(`/courses/${resolvedParams.id}/learn`)}
+            onClick={() => router.push(`/courses/${resolvedParams.slug}/learn`)}
           >
             Back to Course
           </Button>
@@ -340,7 +340,7 @@ export default function QuizPage({
   };
 
   const handleContinue = () => {
-    router.push(`/courses/${resolvedParams.id}/learn`);
+    router.push(`/courses/${resolvedParams.slug}/learn`);
   };
 
   const handleTimeUp = () => {
@@ -394,7 +394,7 @@ export default function QuizPage({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push(`/courses/${resolvedParams.id}/learn`)}
+              onClick={() => router.push(`/courses/${resolvedParams.slug}/learn`)}
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
               Exit Quiz

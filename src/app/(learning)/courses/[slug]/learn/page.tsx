@@ -368,16 +368,16 @@ function LoadingSkeleton() {
 export default function CourseLearnPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
   const resolvedParams = use(params);
   const router = useRouter();
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const { data: courseResponse, isLoading: courseLoading } = useCourse(resolvedParams.id);
-  const { data: curriculumResponse, isLoading: curriculumLoading } = useCourseCurriculum(resolvedParams.id);
-  const { data: enrollmentResponse } = useEnrollment(resolvedParams.id);
+  const { data: courseResponse, isLoading: courseLoading } = useCourse(resolvedParams.slug);
+  const { data: curriculumResponse, isLoading: curriculumLoading } = useCourseCurriculum(resolvedParams.slug);
+  const { data: enrollmentResponse } = useEnrollment(resolvedParams.slug);
 
   const isLoading = courseLoading || curriculumLoading;
 

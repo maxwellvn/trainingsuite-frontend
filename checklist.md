@@ -262,19 +262,19 @@
 ---
 
 ## Phase 11: Admin Dashboard
-- [ ] Admin overview
-  - [ ] Platform statistics cards
+- [x] Admin overview
+  - [x] Platform statistics cards
   - [ ] User growth chart
   - [ ] Revenue chart
-  - [ ] Recent enrollments
+  - [x] Recent enrollments
   - [ ] System health
-- [ ] User management
-  - [ ] Users table
-  - [ ] Search/filter users
+- [x] User management
+  - [x] Users table
+  - [x] Search/filter users
   - [ ] User detail view
-  - [ ] Edit user roles
-  - [ ] Verify/unverify users
-- [ ] Course management
+  - [x] Edit user roles
+  - [x] Verify/unverify users
+- [ ] Course management (in progress)
   - [ ] All courses table
   - [ ] Approve/reject courses
   - [ ] Feature courses
@@ -514,6 +514,7 @@ frontend-trainingsuite/
 | Phase 8: Community | 🔲 Not Started | |
 | Phase 9: Payments | 🔲 Not Started | |
 | Phase 10: Instructor | 🔲 Not Started | |
+| Phase 11: Admin | 🔄 In Progress | Admin layout, dashboard, user management |
 | Phase 11: Admin | 🔲 Not Started | |
 | Phase 12: Components | 🔲 Not Started | |
 | Phase 13: Polish | 🔲 Not Started | |
