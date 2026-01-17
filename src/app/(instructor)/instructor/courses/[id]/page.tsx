@@ -100,7 +100,7 @@ export default function CourseEditorPage({
     content: "",
     type: "video",
     videoUrl: "",
-    duration: 0,
+    videoDuration: 0,
     isFree: false,
   });
 
@@ -184,7 +184,7 @@ export default function CourseEditorPage({
         content: "",
         type: "video",
         videoUrl: "",
-        duration: 0,
+        videoDuration: 0,
         isFree: false,
       });
       toast({ title: "Lesson created successfully" });
@@ -207,7 +207,7 @@ export default function CourseEditorPage({
         content: "",
         type: "video",
         videoUrl: "",
-        duration: 0,
+        videoDuration: 0,
         isFree: false,
       });
       toast({ title: "Lesson updated successfully" });
@@ -264,7 +264,7 @@ export default function CourseEditorPage({
         content: lesson.content || "",
         type: lesson.type || "video",
         videoUrl: lesson.videoUrl || "",
-        duration: lesson.duration || 0,
+        videoDuration: lesson.videoDuration || 0,
         isFree: lesson.isFree || false,
       });
     } else {
@@ -275,7 +275,7 @@ export default function CourseEditorPage({
         content: "",
         type: "video",
         videoUrl: "",
-        duration: 0,
+        videoDuration: 0,
         isFree: false,
       });
     }
@@ -844,11 +844,11 @@ export default function CourseEditorPage({
                       id="duration"
                       type="number"
                       min="0"
-                      value={lessonForm.duration}
+                      value={lessonForm.videoDuration}
                       onChange={(e) =>
                         setLessonForm({
                           ...lessonForm,
-                          duration: parseInt(e.target.value) || 0,
+                          videoDuration: parseInt(e.target.value) || 0,
                         })
                       }
                     />

@@ -527,8 +527,8 @@ export default function CourseLearnPage({
       queryClient.invalidateQueries({ queryKey: ["enrollment", resolvedParams.slug] });
       toast({ title: "Lesson completed!" });
 
-      // Check if course is completed
-      if (response?.data?.isCompleted) {
+      // Check if course is completed (certificate issued means course completed)
+      if (response?.data?.certificateIssued) {
         setCompletionDialogOpen(true);
       }
     },
