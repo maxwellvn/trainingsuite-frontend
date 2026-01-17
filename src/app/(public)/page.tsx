@@ -21,8 +21,8 @@ import type { Course } from "@/types";
 const features = [
   {
     icon: BookOpen,
-    title: "500+ Courses",
-    description: "Access a vast library of courses across various domains and skill levels.",
+    title: "Quality Courses",
+    description: "Access a growing library of courses across various domains and skill levels.",
   },
   {
     icon: Users,
@@ -41,26 +41,6 @@ const features = [
   },
 ];
 
-const testimonials = [
-  {
-    quote: "Training Suite completely transformed my career. The courses are well-structured and the instructors are top-notch.",
-    author: "Alex Johnson",
-    role: "Product Designer at Google",
-    avatar: "A",
-  },
-  {
-    quote: "I landed my dream job after completing just three courses here. The practical projects were invaluable.",
-    author: "Maria Garcia",
-    role: "Frontend Developer at Stripe",
-    avatar: "M",
-  },
-  {
-    quote: "The live sessions feature is amazing. Being able to ask questions in real-time accelerated my learning.",
-    author: "James Chen",
-    role: "Data Analyst at Meta",
-    avatar: "J",
-  },
-];
 
 // Course card color gradients based on index
 const cardGradients = [
@@ -286,42 +266,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-16 bg-muted/30">
-        <div className="container max-w-6xl">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl font-bold tracking-tight">What Our Learners Say</h2>
-            <p className="mt-2 text-muted-foreground">
-              Join thousands of satisfied learners
-            </p>
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            {testimonials.map((testimonial) => (
-              <Card key={testimonial.author} className="border bg-background">
-                <CardContent className="p-5">
-                  <div className="flex gap-0.5 mb-3">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-amber-500 text-amber-500" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                    &ldquo;{testimonial.quote}&rdquo;
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
-                      {testimonial.avatar}
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">{testimonial.author}</p>
-                      <p className="text-xs text-muted-foreground">{testimonial.role}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-16 bg-primary text-primary-foreground">
@@ -333,7 +277,7 @@ export default function HomePage() {
             <p className="mt-3 text-primary-foreground/80">
               {isAuthenticated
                 ? "Pick up where you left off or explore new courses to expand your skills."
-                : "Join over 50,000 learners and start your journey today. Get access to hundreds of courses for free."}
+                : "Start your learning journey today. Get access to quality courses and earn certificates."}
             </p>
             <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
               {isAuthenticated ? (

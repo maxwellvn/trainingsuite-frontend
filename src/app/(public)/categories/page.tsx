@@ -80,17 +80,6 @@ function CategoryCardSkeleton() {
   );
 }
 
-// Featured categories for when no data is available
-const featuredCategories = [
-  { name: "Web Development", slug: "web-development", courseCount: 120 },
-  { name: "Data Science", slug: "data-science", courseCount: 85 },
-  { name: "Mobile Development", slug: "mobile-development", courseCount: 64 },
-  { name: "UI/UX Design", slug: "ui-ux-design", courseCount: 78 },
-  { name: "Digital Marketing", slug: "digital-marketing", courseCount: 56 },
-  { name: "Business Strategy", slug: "business-strategy", courseCount: 42 },
-  { name: "Photography", slug: "photography", courseCount: 38 },
-  { name: "Music Production", slug: "music-production", courseCount: 29 },
-];
 
 export default function CategoriesPage() {
   const { data: categoriesResponse, isLoading } = useCategories();
@@ -121,80 +110,15 @@ export default function CategoriesPage() {
           ))}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {featuredCategories.map((category, index) => (
-            <CategoryCard
-              key={category.slug}
-              category={{
-                _id: category.slug,
-                name: category.name,
-                slug: category.slug,
-                courseCount: category.courseCount,
-              } as Category}
-            />
-          ))}
+        <div className="text-center py-16">
+          <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No Categories Yet</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Categories will appear here once they are added. Check back later for available course categories.
+          </p>
         </div>
       )}
 
-      {/* Popular Topics Section */}
-      <div className="mt-16">
-        <h2 className="text-xl font-bold tracking-tight mb-6">Popular Topics</h2>
-        <div className="flex flex-wrap gap-2">
-          {[
-            "JavaScript",
-            "Python",
-            "React",
-            "Machine Learning",
-            "AWS",
-            "Docker",
-            "Node.js",
-            "TypeScript",
-            "SQL",
-            "Figma",
-            "Adobe Photoshop",
-            "Excel",
-            "Power BI",
-            "iOS Development",
-            "Android",
-            "Flutter",
-            "Kubernetes",
-            "Cybersecurity",
-            "Blockchain",
-            "SEO",
-          ].map((topic) => (
-            <Link key={topic} href={`/courses?search=${encodeURIComponent(topic)}`}>
-              <Badge
-                variant="secondary"
-                className="px-3 py-1.5 text-sm hover:bg-primary hover:text-primary-foreground cursor-pointer transition-colors"
-              >
-                {topic}
-              </Badge>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Stats Section */}
-      <div className="mt-16 py-12 bg-muted/30 -mx-4 px-4 rounded-lg">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-          <div>
-            <div className="text-3xl font-bold text-primary">500+</div>
-            <p className="text-sm text-muted-foreground mt-1">Courses Available</p>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-primary">50K+</div>
-            <p className="text-sm text-muted-foreground mt-1">Students Enrolled</p>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-primary">100+</div>
-            <p className="text-sm text-muted-foreground mt-1">Expert Instructors</p>
-          </div>
-          <div>
-            <div className="text-3xl font-bold text-primary">15+</div>
-            <p className="text-sm text-muted-foreground mt-1">Course Categories</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

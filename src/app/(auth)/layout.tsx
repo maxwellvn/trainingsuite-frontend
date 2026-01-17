@@ -40,20 +40,6 @@ export default function AuthLayout({
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="rounded-xl bg-white/10 p-4">
-              <div className="text-2xl font-bold">500+</div>
-              <div className="text-sm text-primary-foreground/70">Courses</div>
-            </div>
-            <div className="rounded-xl bg-white/10 p-4">
-              <div className="text-2xl font-bold">50k+</div>
-              <div className="text-sm text-primary-foreground/70">Students</div>
-            </div>
-            <div className="rounded-xl bg-white/10 p-4">
-              <div className="text-2xl font-bold">100+</div>
-              <div className="text-sm text-primary-foreground/70">Instructors</div>
-            </div>
-          </div>
         </div>
 
         <div className="flex items-center gap-4 text-sm text-primary-foreground/70">

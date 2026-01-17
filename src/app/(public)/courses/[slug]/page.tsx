@@ -748,20 +748,6 @@ export default function CourseDetailPage({
                           <div>
                             <h3 className="text-lg font-semibold">{instructor.name}</h3>
                             <p className="text-muted-foreground">{instructor.title || "Instructor"}</p>
-                            <div className="flex items-center gap-4 mt-2 text-sm">
-                              <div className="flex items-center gap-1">
-                                <Star className="h-4 w-4 text-amber-500 fill-current" />
-                                <span>4.8 Instructor Rating</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Users className="h-4 w-4" />
-                                <span>50,000+ Students</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <BookOpen className="h-4 w-4" />
-                                <span>15 Courses</span>
-                              </div>
-                            </div>
                           </div>
                         </div>
                         {instructor.bio && (
@@ -889,7 +875,7 @@ export default function CourseDetailPage({
 
       {/* Related Courses Section */}
       <RelatedCourses
-        categoryId={typeof course.category === "object" ? course.category._id : course.category}
+        categoryId={course.category && typeof course.category === "object" ? course.category._id : course.category || undefined}
         currentCourseId={course._id}
       />
     </div>
