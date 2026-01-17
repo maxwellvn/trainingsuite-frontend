@@ -249,10 +249,10 @@
     - [x] Category selection
     - [x] Level selection
     - [ ] Publish/unpublish
-- [ ] Live session management
-  - [ ] Create session
-  - [ ] Edit session
-  - [ ] Start/end session
+- [x] Live session management
+  - [x] Create session
+  - [x] Edit session
+  - [x] Start/end session
   - [ ] View attendance
 - [x] Student analytics
   - [x] Enrollment trends
