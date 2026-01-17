@@ -26,8 +26,8 @@ export interface UpdateProfileData {
 
 export const authApi = {
   login: async (credentials: LoginCredentials) => {
-    const response = await apiClient.post<ApiResponse<{ user: User }>>(
-      "/auth/callback/credentials",
+    const response = await apiClient.post<ApiResponse<{ user: User; token: string }>>(
+      "/auth/login",
       credentials
     );
     return response.data;
