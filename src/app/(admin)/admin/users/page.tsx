@@ -156,11 +156,20 @@ export default function UsersPage() {
     });
   };
 
+  // Verify user mutation
+  const verifyUserMutation = useMutation({
+    mutationFn: (id: string) => adminApi.verifyUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      toast({ title: "User verified successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to verify user", variant: "destructive" });
+    },
+  });
+
   const handleVerifyUser = (userId: string) => {
-    updateUserMutation.mutate({
-      id: userId,
-      data: { isVerified: true },
-    });
+    verifyUserMutation.mutate(userId);
   };
 
   const handleDeleteUser = (user: User) => {
@@ -400,8 +409,15 @@ export default function UsersPage() {
                               Send Email
                             </DropdownMenuItem>
                             {!user.isVerified && (
-                              <DropdownMenuItem onClick={() => handleVerifyUser(user._id)}>
-                                <ShieldCheck className="h-4 w-4 mr-2" />
+                              <DropdownMenuItem
+                                onClick={() => handleVerifyUser(user._id)}
+                                disabled={verifyUserMutation.isPending}
+                              >
+                                {verifyUserMutation.isPending ? (
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                  <ShieldCheck className="h-4 w-4 mr-2" />
+                                )}
                                 Verify User
                               </DropdownMenuItem>
                             )}

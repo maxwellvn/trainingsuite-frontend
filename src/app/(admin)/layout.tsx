@@ -18,6 +18,10 @@ import {
   MessageSquare,
   Megaphone,
   LogOut,
+  GraduationCap,
+  Award,
+  Video,
+  HelpCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -33,46 +37,86 @@ import {
 import { useAuth } from "@/hooks";
 import { getInitials, cn } from "@/lib/utils";
 
-const adminNavItems = [
+const adminNavSections = [
   {
-    label: "Dashboard",
-    href: "/admin",
-    icon: LayoutDashboard,
+    title: "Admin",
+    items: [
+      {
+        label: "Dashboard",
+        href: "/admin",
+        icon: LayoutDashboard,
+      },
+      {
+        label: "Users",
+        href: "/admin/users",
+        icon: Users,
+      },
+      {
+        label: "Courses",
+        href: "/admin/courses",
+        icon: BookOpen,
+      },
+      {
+        label: "Categories",
+        href: "/admin/categories",
+        icon: FolderTree,
+      },
+      {
+        label: "Analytics",
+        href: "/admin/analytics",
+        icon: BarChart3,
+      },
+      {
+        label: "Announcements",
+        href: "/admin/announcements",
+        icon: Megaphone,
+      },
+      {
+        label: "Payments",
+        href: "/admin/payments",
+        icon: CreditCard,
+      },
+      {
+        label: "Settings",
+        href: "/admin/settings",
+        icon: Settings,
+      },
+    ],
   },
   {
-    label: "Users",
-    href: "/admin/users",
-    icon: Users,
-  },
-  {
-    label: "Courses",
-    href: "/admin/courses",
-    icon: BookOpen,
-  },
-  {
-    label: "Categories",
-    href: "/admin/categories",
-    icon: FolderTree,
-  },
-  {
-    label: "Analytics",
-    href: "/admin/analytics",
-    icon: BarChart3,
-  },
-  {
-    label: "Announcements",
-    href: "/admin/announcements",
-    icon: Megaphone,
-  },
-  {
-    label: "Payments",
-    href: "/admin/payments",
-    icon: CreditCard,
-  },
-  {
-    label: "Settings",
-    href: "/admin/settings",
-    icon: Settings,
+    title: "Learning",
+    items: [
+      {
+        label: "My Courses",
+        href: "/admin/my-courses",
+        icon: GraduationCap,
+      },
+      {
+        label: "Certificates",
+        href: "/admin/certificates",
+        icon: Award,
+      },
+      {
+        label: "Live Sessions",
+        href: "/admin/live-sessions",
+        icon: Video,
+      },
+      {
+        label: "Forums",
+        href: "/admin/forums",
+        icon: MessageSquare,
+      },
+      {
+        label: "Notifications",
+        href: "/admin/notifications",
+        icon: Bell,
+      },
+      {
+        label: "Help",
+        href: "/admin/help",
+        icon: HelpCircle,
+      },
+    ],
   },
 ];
 
@@ -119,28 +163,39 @@ export default function AdminLayout({
         </div>
 
         {/* Navigation */}
-        <nav className="p-2 space-y-1">
-          {adminNavItems.map((item) => {
-            const isActive = pathname === item.href ||
-              (item.href !== "/admin" && pathname.startsWith(item.href));
-            const Icon = item.icon;
+        <nav className="p-2 space-y-4 overflow-y-auto max-h-[calc(100vh-180px)]">
+          {adminNavSections.map((section) => (
+            <div key={section.title}>
+              {!collapsed && (
+                <h3 className="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  {section.title}
+                </h3>
+              )}
+              <div className="space-y-1">
+                {section.items.map((item) => {
+                  const isActive = pathname === item.href ||
+                    (item.href !== "/admin" && pathname.startsWith(item.href));
+                  const Icon = item.icon;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
-                  isActive
-                    ? "bg-primary text-white"
-                    : "text-slate-400 hover:text-white hover:bg-slate-800"
-                )}
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                {!collapsed && <span className="text-sm">{item.label}</span>}
-              </Link>
-            );
-          })}
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
+                        isActive
+                          ? "bg-primary text-white"
+                          : "text-slate-400 hover:text-white hover:bg-slate-800"
+                      )}
+                    >
+                      <Icon className="h-5 w-5 shrink-0" />
+                      {!collapsed && <span className="text-sm">{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* User Section */}
@@ -175,10 +230,12 @@ export default function AdminLayout({
         <header className="h-16 bg-background border-b sticky top-0 z-30 flex items-center justify-between px-6">
           <div>
             <h1 className="text-lg font-semibold">
-              {adminNavItems.find((item) =>
-                pathname === item.href ||
-                (item.href !== "/admin" && pathname.startsWith(item.href))
-              )?.label || "Dashboard"}
+              {adminNavSections
+                .flatMap((section) => section.items)
+                .find((item) =>
+                  pathname === item.href ||
+                  (item.href !== "/admin" && pathname.startsWith(item.href))
+                )?.label || "Dashboard"}
             </h1>
           </div>
 

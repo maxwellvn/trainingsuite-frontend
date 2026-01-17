@@ -114,6 +114,13 @@ export const adminApi = {
     return response.data;
   },
 
+  verifyUser: async (id: string) => {
+    const response = await apiClient.post<ApiResponse<User>>(
+      `/admin/users/${id}/verify`
+    );
+    return response.data;
+  },
+
   // Analytics
   getOverview: async () => {
     const response = await apiClient.get<ApiResponse<OverviewAnalytics>>(
