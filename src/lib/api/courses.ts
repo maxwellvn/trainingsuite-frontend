@@ -15,6 +15,7 @@ export interface CreateCourseData {
   price?: number;
   isFree?: boolean;
   level?: string;
+  duration?: number;
   requirements?: string[];
   objectives?: string[];
   tags?: string[];

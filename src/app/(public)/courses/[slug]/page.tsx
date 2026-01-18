@@ -521,6 +521,13 @@ export default function CourseDetailPage({
               <Card className="sticky top-24 shadow-lg">
                 {/* Preview Image */}
                 <div className="aspect-video bg-gradient-to-br from-violet-500 to-purple-600 rounded-t-lg relative overflow-hidden">
+                  {course.thumbnail && (
+                    <img
+                      src={course.thumbnail}
+                      alt={course.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  )}
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="h-16 w-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors">
                       <Play className="h-8 w-8 text-white fill-white ml-1" />

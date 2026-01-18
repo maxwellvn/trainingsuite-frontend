@@ -10,6 +10,7 @@ import {
   X,
   Plus,
   DollarSign,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -48,12 +49,16 @@ export default function AdminCreateCoursePage() {
     price: 0,
     isFree: true,
     level: "beginner",
+    duration: 0,
     requirements: [],
     objectives: [],
     tags: [],
     thumbnail: "",
     previewVideo: "",
   });
+
+  const [durationHours, setDurationHours] = useState(0);
+  const [durationMinutes, setDurationMinutes] = useState(0);
 
   const [newRequirement, setNewRequirement] = useState("");
   const [newObjective, setNewObjective] = useState("");
@@ -97,6 +102,8 @@ export default function AdminCreateCoursePage() {
       return;
     }
 
+    const totalMinutes = (durationHours * 60) + durationMinutes;
+
     createMutation.mutate({
       title: formData.title.trim(),
       description: formData.description.trim(),
@@ -104,6 +111,7 @@ export default function AdminCreateCoursePage() {
       price: formData.isFree ? 0 : formData.price,
       isFree: formData.isFree,
       level: formData.level,
+      duration: totalMinutes > 0 ? totalMinutes : undefined,
       requirements: formData.requirements,
       objectives: formData.objectives,
       tags: formData.tags,
@@ -253,6 +261,40 @@ export default function AdminCreateCoursePage() {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Estimated Duration</Label>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className="relative w-20">
+                        <Input
+                          type="number"
+                          min="0"
+                          max="999"
+                          value={durationHours}
+                          onChange={(e) => setDurationHours(Math.max(0, parseInt(e.target.value) || 0))}
+                          className="pr-2"
+                        />
+                      </div>
+                      <span className="text-sm text-muted-foreground">hours</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="relative w-20">
+                        <Input
+                          type="number"
+                          min="0"
+                          max="59"
+                          value={durationMinutes}
+                          onChange={(e) => setDurationMinutes(Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))}
+                          className="pr-2"
+                        />
+                      </div>
+                      <span className="text-sm text-muted-foreground">minutes</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Total: {durationHours > 0 || durationMinutes > 0 ? `${durationHours}h ${durationMinutes}m` : "Not set"}
+                  </p>
                 </div>
               </CardContent>
             </Card>
