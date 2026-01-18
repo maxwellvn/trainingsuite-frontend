@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
@@ -66,6 +66,28 @@ export default function PostDetailPage() {
     queryKey: ["post-comments", postId],
     queryFn: () => forumsApi.getComments(postId, 1, 100),
   });
+
+  // Initialize liked state from server response
+  useEffect(() => {
+    if (postData?.data?.isLiked) {
+      setLikedPosts((prev) => new Set([...prev, postData.data._id]));
+    }
+  }, [postData]);
+
+  useEffect(() => {
+    if (commentsData?.data) {
+      const likedIds = new Set<string>();
+      commentsData.data.forEach((comment: any) => {
+        if (comment.isLiked) likedIds.add(comment._id);
+        comment.replies?.forEach((reply: any) => {
+          if (reply.isLiked) likedIds.add(reply._id);
+        });
+      });
+      if (likedIds.size > 0) {
+        setLikedComments(likedIds);
+      }
+    }
+  }, [commentsData]);
 
   const createCommentMutation = useMutation({
     mutationFn: ({ content, parentId }: { content: string; parentId?: string }) =>
@@ -239,7 +261,7 @@ export default function PostDetailPage() {
                   onClick={() => likeCommentMutation.mutate(comment._id)}
                 >
                   <Heart className={`h-3 w-3 mr-1 ${likedComments.has(comment._id) ? "fill-red-500" : ""}`} />
-                  {((comment as any).likes || 0) + (likedComments.has(comment._id) ? 1 : 0)}
+                  {(comment as any).likes || 0}
                 </Button>
                 <Button
                   variant="ghost"
@@ -330,7 +352,7 @@ export default function PostDetailPage() {
                   onClick={() => likePostMutation.mutate(post._id)}
                 >
                   <Heart className={`h-4 w-4 mr-1 ${likedPosts.has(post._id) ? "fill-red-500" : ""}`} />
-                  <span>{((post as any).likes || 0) + (likedPosts.has(post._id) ? 1 : 0)} likes</span>
+                  <span>{(post as any).likes || 0} likes</span>
                 </Button>
                 <div className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
