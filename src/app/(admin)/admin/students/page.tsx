@@ -89,78 +89,78 @@ export default function AdminStudentsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-blue-600">Active</Badge>;
+        return <Badge className="rounded-none bg-blue-600 font-bold uppercase text-[10px] tracking-wide border-0">Active</Badge>;
       case "completed":
-        return <Badge className="bg-green-600">Completed</Badge>;
+        return <Badge className="rounded-none bg-green-600 font-bold uppercase text-[10px] tracking-wide border-0">Completed</Badge>;
       case "expired":
-        return <Badge variant="secondary">Expired</Badge>;
+        return <Badge variant="secondary" className="rounded-none font-bold uppercase text-[10px] tracking-wide border-border border">Expired</Badge>;
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge variant="secondary" className="rounded-none border-border font-bold uppercase text-[10px] tracking-wide">{status}</Badge>;
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Students</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-heading font-bold uppercase tracking-tight">Students</h1>
+          <p className="text-muted-foreground mt-1">
             View and manage all enrolled students across the platform.
           </p>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="rounded-none border-border bg-card">
+          <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Users className="h-6 w-6 text-primary" />
+              <div className="h-10 w-10 flex items-center justify-center border border-primary/20 bg-primary/5 text-primary">
+                <Users className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.totalStudents}</p>
-                <p className="text-sm text-muted-foreground">Total Students</p>
+                <div className="text-3xl font-light text-foreground">{stats.totalStudents}</div>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">Total Students</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="rounded-none border-border bg-card">
+          <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                <BookOpen className="h-6 w-6 text-blue-600" />
+              <div className="h-10 w-10 flex items-center justify-center border border-blue-200 bg-blue-50 text-blue-600">
+                <BookOpen className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.activeEnrollments}</p>
-                <p className="text-sm text-muted-foreground">Active Enrollments</p>
+                <div className="text-3xl font-light text-foreground">{stats.activeEnrollments}</div>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">Active Enrollments</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="rounded-none border-border bg-card">
+          <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
-                <Award className="h-6 w-6 text-green-600" />
+              <div className="h-10 w-10 flex items-center justify-center border border-green-200 bg-green-50 text-green-600">
+                <Award className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.completedEnrollments}</p>
-                <p className="text-sm text-muted-foreground">Completed</p>
+                <div className="text-3xl font-light text-foreground">{stats.completedEnrollments}</div>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">Completed</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
+        <Card className="rounded-none border-border bg-card">
+          <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-yellow-100 flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-yellow-600" />
+              <div className="h-10 w-10 flex items-center justify-center border border-yellow-200 bg-yellow-50 text-yellow-600">
+                <TrendingUp className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats.averageProgress}%</p>
-                <p className="text-sm text-muted-foreground">Avg Progress</p>
+                <div className="text-3xl font-light text-foreground">{stats.averageProgress}%</div>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">Avg Progress</p>
               </div>
             </div>
           </CardContent>
@@ -168,31 +168,31 @@ export default function AdminStudentsPage() {
       </div>
 
       {/* Students Table */}
-      <Card>
-        <CardHeader>
+      <Card className="rounded-none border-border">
+        <CardHeader className="pb-4 border-b border-border bg-muted/5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <CardTitle>All Enrollments</CardTitle>
+              <CardTitle className="font-heading font-bold uppercase tracking-wide text-lg">All Enrollments</CardTitle>
               <CardDescription>
                 {filteredEnrollments.length} enrollment{filteredEnrollments.length !== 1 ? "s" : ""}
               </CardDescription>
             </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="relative w-64">
+            <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap">
+              <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search students..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 rounded-none border-border bg-muted/20 focus:bg-background"
                 />
               </div>
               <Select value={courseFilter} onValueChange={setCourseFilter}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-48 rounded-none border-border">
                   <Filter className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="All Courses" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-none border-border">
                   <SelectItem value="all">All Courses</SelectItem>
                   {courses.map((course) => (
                     <SelectItem key={course._id} value={course._id}>
@@ -202,10 +202,10 @@ export default function AdminStudentsPage() {
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-36">
+                <SelectTrigger className="w-36 rounded-none border-border">
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-none border-border">
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
@@ -215,16 +215,16 @@ export default function AdminStudentsPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {isLoading ? (
-            <div className="space-y-4">
+            <div className="space-y-4 p-6">
               {[1, 2, 3, 4, 5].map((i) => (
-                <Skeleton key={i} className="h-16 w-full" />
+                <Skeleton key={i} className="h-16 w-full rounded-none" />
               ))}
             </div>
           ) : filteredEnrollments.length === 0 ? (
             <div className="text-center py-12">
-              <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <Users className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
               <h3 className="text-lg font-medium">No students found</h3>
               <p className="text-muted-foreground mt-1">
                 {searchQuery || courseFilter !== "all" || statusFilter !== "all"
@@ -233,61 +233,63 @@ export default function AdminStudentsPage() {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Course</TableHead>
-                  <TableHead>Progress</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Enrolled</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredEnrollments.map((enrollment) => {
-                  const user = enrollment.user as User;
-                  const course = enrollment.course as Course;
+            <div className="border-t border-border">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30 border-border hover:bg-muted/30">
+                    <TableHead className="font-bold uppercase text-xs tracking-wider pl-6">Student</TableHead>
+                    <TableHead className="font-bold uppercase text-xs tracking-wider">Course</TableHead>
+                    <TableHead className="font-bold uppercase text-xs tracking-wider">Progress</TableHead>
+                    <TableHead className="font-bold uppercase text-xs tracking-wider">Status</TableHead>
+                    <TableHead className="font-bold uppercase text-xs tracking-wider">Enrolled</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredEnrollments.map((enrollment) => {
+                    const user = enrollment.user as User;
+                    const course = enrollment.course as Course;
 
-                  return (
-                    <TableRow key={enrollment._id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={user?.avatar} />
-                            <AvatarFallback className="bg-primary/10 text-primary">
-                              {getInitials(user?.name || "?")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{user?.name || "Unknown"}</p>
-                            <p className="text-sm text-muted-foreground">{user?.email}</p>
+                    return (
+                      <TableRow key={enrollment._id} className="border-border hover:bg-muted/10 transition-colors">
+                        <TableCell className="pl-6">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-9 w-9 rounded-none border border-border">
+                              <AvatarImage src={user?.avatar} />
+                              <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                                {getInitials(user?.name || "?")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-semibold text-sm">{user?.name || "Unknown"}</p>
+                              <p className="text-xs text-muted-foreground font-mono">{user?.email}</p>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <p className="font-medium truncate max-w-[200px]">
-                          {course?.title || "Unknown Course"}
-                        </p>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Progress value={enrollment.progress || 0} className="w-24 h-2" />
-                          <span className="text-sm text-muted-foreground">
-                            {enrollment.progress || 0}%
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(enrollment.status)}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {enrollment.startedAt
-                          ? format(parseISO(enrollment.startedAt), "MMM d, yyyy")
-                          : format(parseISO(enrollment.createdAt), "MMM d, yyyy")}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                        </TableCell>
+                        <TableCell>
+                          <p className="font-medium text-sm truncate max-w-[200px]">
+                            {course?.title || "Unknown Course"}
+                          </p>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Progress value={enrollment.progress || 0} className="w-24 h-1.5 rounded-none bg-muted" />
+                            <span className="text-xs font-mono text-muted-foreground">
+                              {enrollment.progress || 0}%
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{getStatusBadge(enrollment.status)}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground font-mono">
+                          {enrollment.startedAt
+                            ? format(parseISO(enrollment.startedAt), "MMM d, yyyy")
+                            : format(parseISO(enrollment.createdAt), "MMM d, yyyy")}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

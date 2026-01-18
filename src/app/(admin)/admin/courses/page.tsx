@@ -79,72 +79,6 @@ const levelColors: Record<string, string> = {
   advanced: "bg-orange-100 text-orange-800",
 };
 
-function CoursesTableSkeleton() {
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-4">
-        {[...Array(4)].map((_, i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <Skeleton className="h-8 w-20 mb-2" />
-              <Skeleton className="h-4 w-24" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex gap-3">
-            <Skeleton className="h-10 flex-1 max-w-sm" />
-            <Skeleton className="h-10 w-[130px]" />
-            <Skeleton className="h-10 w-[130px]" />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]"><Skeleton className="h-4 w-4" /></TableHead>
-                  <TableHead><Skeleton className="h-4 w-20" /></TableHead>
-                  <TableHead><Skeleton className="h-4 w-16" /></TableHead>
-                  <TableHead><Skeleton className="h-4 w-16" /></TableHead>
-                  <TableHead><Skeleton className="h-4 w-12" /></TableHead>
-                  <TableHead><Skeleton className="h-4 w-20" /></TableHead>
-                  <TableHead><Skeleton className="h-4 w-16" /></TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {[...Array(5)].map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-4" /></TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Skeleton className="h-12 w-20 rounded" />
-                        <div className="space-y-2">
-                          <Skeleton className="h-4 w-40" />
-                          <Skeleton className="h-3 w-24" />
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
-                    <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-                    <TableCell><Skeleton className="h-8 w-8" /></TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
 export default function CoursesPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -276,57 +210,57 @@ export default function CoursesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in duration-500">
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                <BookOpen className="h-5 w-5 text-blue-600" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="rounded-none border-border bg-card">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 flex items-center justify-center border border-blue-200 bg-blue-50 text-blue-600">
+                <BookOpen className="h-5 w-5" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{totalCourses}</div>
-                <p className="text-sm text-muted-foreground">Total Courses</p>
+                <div className="text-3xl font-light text-foreground">{totalCourses}</div>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">Total Courses</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+        <Card className="rounded-none border-border bg-card">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 flex items-center justify-center border border-green-200 bg-green-50 text-green-600">
+                <CheckCircle className="h-5 w-5" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{publishedCount}</div>
-                <p className="text-sm text-muted-foreground">Published</p>
+                <div className="text-3xl font-light text-foreground">{publishedCount}</div>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">Published</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                <Edit className="h-5 w-5 text-gray-600" />
+        <Card className="rounded-none border-border bg-card">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 flex items-center justify-center border border-gray-200 bg-gray-50 text-gray-600">
+                <Edit className="h-5 w-5" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{draftCount}</div>
-                <p className="text-sm text-muted-foreground">Drafts</p>
+                <div className="text-3xl font-light text-foreground">{draftCount}</div>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">Drafts</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-yellow-100 flex items-center justify-center">
-                <Clock className="h-5 w-5 text-yellow-600" />
+        <Card className="rounded-none border-border bg-card">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-10 flex items-center justify-center border border-yellow-200 bg-yellow-50 text-yellow-600">
+                <Clock className="h-5 w-5" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{pendingCount}</div>
-                <p className="text-sm text-muted-foreground">Pending Review</p>
+                <div className="text-3xl font-light text-foreground">{pendingCount}</div>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">Pending Review</p>
               </div>
             </div>
           </CardContent>
@@ -334,24 +268,24 @@ export default function CoursesPage() {
       </div>
 
       {/* Filters & Actions */}
-      <Card>
-        <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row gap-4 justify-between">
-            <div className="flex flex-1 gap-3">
-              <div className="relative flex-1 max-w-sm">
+      <Card className="rounded-none border-border">
+        <CardHeader className="pb-4 border-b border-border bg-muted/5">
+          <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <div className="relative w-full sm:w-[300px]">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search courses..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 rounded-none border-border bg-muted/20 focus:bg-background"
                 />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[130px]">
+                <SelectTrigger className="w-full sm:w-[150px] rounded-none border-border bg-muted/20">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-none border-border">
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
                   <SelectItem value="draft">Draft</SelectItem>
@@ -360,26 +294,28 @@ export default function CoursesPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+            <div className="flex gap-2 w-full sm:w-auto justify-end">
+              <Button variant="outline" size="sm" className="rounded-none border-border">
                 <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           {/* Bulk Actions */}
           {selectedCourses.length > 0 && (
-            <div className="flex items-center gap-3 mb-4 p-3 bg-muted/50 rounded-lg">
-              <span className="text-sm font-medium">
+            <div className="flex flex-wrap items-center gap-3 mb-6 p-3 bg-primary/5 border border-primary/20 rounded-none">
+              <span className="text-sm font-medium px-2">
                 {selectedCourses.length} selected
               </span>
+              <div className="h-4 w-px bg-border mx-2 hidden sm:block" />
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={handleBulkPublish}
                 disabled={publishMutation.isPending}
+                className="rounded-none h-8 text-green-600 hover:text-green-700 hover:bg-green-50"
               >
                 {publishMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -389,10 +325,11 @@ export default function CoursesPage() {
                 Publish
               </Button>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={handleBulkFeature}
                 disabled={featureMutation.isPending}
+                className="rounded-none h-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
               >
                 {featureMutation.isPending ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -402,9 +339,9 @@ export default function CoursesPage() {
                 Feature
               </Button>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="text-red-600"
+                className="rounded-none h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
                 onClick={handleBulkArchive}
                 disabled={archiveMutation.isPending}
               >
@@ -419,185 +356,198 @@ export default function CoursesPage() {
           )}
 
           {/* Table */}
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]">
-                    <Checkbox
-                      checked={
-                        selectedCourses.length === filteredCourses.length &&
-                        filteredCourses.length > 0
-                      }
-                      onCheckedChange={toggleSelectAll}
-                    />
-                  </TableHead>
-                  <TableHead>Course</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Level</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Enrollments</TableHead>
-                  <TableHead>Rating</TableHead>
-                  <TableHead className="w-[50px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCourses.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">No courses found</p>
-                    </TableCell>
+          <div className="border border-border rounded-none overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30 border-border hover:bg-muted/30">
+                    <TableHead className="w-[50px] pl-6">
+                      <Checkbox
+                        checked={
+                          selectedCourses.length === filteredCourses.length &&
+                          filteredCourses.length > 0
+                        }
+                        onCheckedChange={toggleSelectAll}
+                        className="rounded-none border-muted-foreground/50 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                      />
+                    </TableHead>
+                    <TableHead className="font-bold uppercase text-xs tracking-wider">Course</TableHead>
+                    <TableHead className="font-bold uppercase text-xs tracking-wider">Status</TableHead>
+                    <TableHead className="font-bold uppercase text-xs tracking-wider">Level</TableHead>
+                    <TableHead className="font-bold uppercase text-xs tracking-wider">Price</TableHead>
+                    <TableHead className="font-bold uppercase text-xs tracking-wider text-right">Enrollments</TableHead>
+                    <TableHead className="font-bold uppercase text-xs tracking-wider text-right">Rating</TableHead>
+                    <TableHead className="w-[50px] pr-6"></TableHead>
                   </TableRow>
-                ) : (
-                  filteredCourses.map((course) => (
-                    <TableRow key={course._id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedCourses.includes(course._id)}
-                          onCheckedChange={() => toggleSelect(course._id)}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="h-12 w-20 rounded bg-muted overflow-hidden shrink-0">
-                            {course.thumbnail ? (
-                              <img
-                                src={course.thumbnail}
-                                alt={course.title}
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              <div className="h-full w-full flex items-center justify-center">
-                                <BookOpen className="h-5 w-5 text-muted-foreground" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-medium text-sm line-clamp-1">
-                              {course.title}
-                            </p>
-                          </div>
-                          {course.isFeatured && (
-                            <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
-                          )}
+                </TableHeader>
+                <TableBody>
+                  {filteredCourses.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-12">
+                        <div className="flex flex-col items-center">
+                          <BookOpen className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                          <p className="text-muted-foreground font-medium">No courses found matching your criteria</p>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={`${
-                            statusColors[course.status || "draft"]
-                          } capitalize`}
-                        >
-                          {course.status || "draft"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={`${
-                            levelColors[course.level || "beginner"]
-                          } capitalize`}
-                        >
-                          {course.level || "beginner"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {course.price === 0
-                          ? "Free"
-                          : formatCurrency(course.price || 0, course.currency || "USD")}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Users className="h-4 w-4 text-muted-foreground" />
-                          <span>{course.enrollmentCount || 0}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-                          <span>{course.averageRating?.toFixed(1) || "N/A"}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild>
-                              <Link href={`/courses/${course.slug || course._id}`}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                View Course
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/admin/courses/${course._id}`}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit / Manage Modules
-                              </Link>
-                            </DropdownMenuItem>
-                            {course.status !== "published" && (
-                              <DropdownMenuItem
-                                onClick={() => publishMutation.mutate(course._id)}
-                              >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Publish
-                              </DropdownMenuItem>
-                            )}
-                            {course.isFeatured ? (
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  featureMutation.mutate({ id: course._id, featured: false })
-                                }
-                              >
-                                <Sparkles className="h-4 w-4 mr-2" />
-                                Unfeature
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  featureMutation.mutate({ id: course._id, featured: true })
-                                }
-                              >
-                                <Sparkles className="h-4 w-4 mr-2" />
-                                Feature
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                            {course.status !== "archived" && (
-                              <DropdownMenuItem
-                                onClick={() => archiveMutation.mutate(course._id)}
-                              >
-                                <Archive className="h-4 w-4 mr-2" />
-                                Archive
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => handleDelete(course)}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    filteredCourses.map((course) => (
+                      <TableRow key={course._id} className="border-border hover:bg-muted/10 transition-colors">
+                        <TableCell className="pl-6">
+                          <Checkbox
+                            checked={selectedCourses.includes(course._id)}
+                            onCheckedChange={() => toggleSelect(course._id)}
+                            className="rounded-none border-muted-foreground/50 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                          />
+                        </TableCell>
+                        <TableCell className="max-w-[300px]">
+                          <div className="flex items-center gap-4">
+                            <div className="h-12 w-16 border border-border bg-muted flex items-center justify-center overflow-hidden shrink-0">
+                              {course.thumbnail ? (
+                                <img
+                                  src={course.thumbnail}
+                                  alt={course.title}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <BookOpen className="h-5 w-5 text-muted-foreground/50" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                                {course.title}
+                              </p>
+                              {course.isFeatured && (
+                                <div className="flex items-center gap-1 mt-1">
+                                  <Sparkles className="h-3 w-3 text-amber-500" />
+                                  <span className="text-[10px] uppercase font-bold tracking-wider text-amber-500">Featured</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={`rounded-none uppercase text-[10px] tracking-wide font-bold h-6 ${course.status === 'published' ? 'border-green-200 bg-green-50 text-green-700' :
+                                course.status === 'draft' ? 'border-border bg-muted text-muted-foreground' :
+                                  course.status === 'pending' ? 'border-yellow-200 bg-yellow-50 text-yellow-700' :
+                                    'border-red-200 bg-red-50 text-red-700'
+                              }`}
+                          >
+                            {course.status || "draft"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="secondary"
+                            className="rounded-none font-normal text-muted-foreground bg-transparent border border-border"
+                          >
+                            {course.level || "beginner"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-mono text-sm font-medium">
+                          {course.price === 0
+                            ? <span className="text-green-600 font-bold uppercase text-xs">Free</span>
+                            : formatCurrency(course.price || 0, course.currency || "USD")}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <span className="font-mono text-sm">{course.enrollmentCount || 0}</span>
+                            <Users className="h-3.5 w-3.5 text-muted-foreground/70" />
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <span className="font-mono text-sm">{course.averageRating?.toFixed(1) || "N/A"}</span>
+                            <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+                          </div>
+                        </TableCell>
+                        <TableCell className="pr-6">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-none hover:bg-muted">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="rounded-none border-border">
+                              <DropdownMenuLabel className="font-heading font-bold text-xs uppercase tracking-wider">Actions</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem asChild className="rounded-none cursor-pointer">
+                                <Link href={`/courses/${course.slug || course._id}`}>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View Course
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild className="rounded-none cursor-pointer">
+                                <Link href={`/admin/courses/${course._id}`}>
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit / Manage
+                                </Link>
+                              </DropdownMenuItem>
+                              {course.status !== "published" && (
+                                <DropdownMenuItem
+                                  onClick={() => publishMutation.mutate(course._id)}
+                                  className="rounded-none cursor-pointer"
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-2" />
+                                  Publish
+                                </DropdownMenuItem>
+                              )}
+                              {course.isFeatured ? (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    featureMutation.mutate({ id: course._id, featured: false })
+                                  }
+                                  className="rounded-none cursor-pointer"
+                                >
+                                  <Sparkles className="h-4 w-4 mr-2" />
+                                  Unfeature
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    featureMutation.mutate({ id: course._id, featured: true })
+                                  }
+                                  className="rounded-none cursor-pointer"
+                                >
+                                  <Sparkles className="h-4 w-4 mr-2" />
+                                  Feature
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
+                              {course.status !== "archived" && (
+                                <DropdownMenuItem
+                                  onClick={() => archiveMutation.mutate(course._id)}
+                                  className="rounded-none cursor-pointer"
+                                >
+                                  <Archive className="h-4 w-4 mr-2" />
+                                  Archive
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive rounded-none cursor-pointer"
+                                onClick={() => handleDelete(course)}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
 
           {/* Pagination */}
           {pagination && pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
-              <p className="text-sm text-muted-foreground">
-                Showing {filteredCourses.length} of {pagination.total} courses
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+                Showing <span className="text-foreground">{filteredCourses.length}</span> of <span className="text-foreground">{pagination.total}</span> courses
               </p>
               <div className="flex items-center gap-2">
                 <Button
@@ -605,15 +555,16 @@ export default function CoursesPage() {
                   size="sm"
                   disabled={page === 1}
                   onClick={() => setPage((p) => p - 1)}
+                  className="rounded-none h-8 w-8 p-0"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 {[...Array(Math.min(pagination.totalPages, 5))].map((_, i) => (
                   <Button
                     key={i}
-                    variant="outline"
+                    variant={page === i + 1 ? "default" : "outline"}
                     size="sm"
-                    className={page === i + 1 ? "bg-primary text-primary-foreground" : ""}
+                    className={`rounded-none h-8 w-8 p-0 ${page === i + 1 ? "bg-primary text-primary-foreground" : ""}`}
                     onClick={() => setPage(i + 1)}
                   >
                     {i + 1}
@@ -624,6 +575,7 @@ export default function CoursesPage() {
                   size="sm"
                   disabled={page === pagination.totalPages}
                   onClick={() => setPage((p) => p + 1)}
+                  className="rounded-none h-8 w-8 p-0"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -635,31 +587,66 @@ export default function CoursesPage() {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-none border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Course</AlertDialogTitle>
+            <AlertDialogTitle className="font-heading">Delete Course</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{courseToDelete?.title}"? This action
-              cannot be undone and will remove all associated data including
-              enrollments and progress.
+              Are you sure you want to delete <span className="font-semibold text-foreground">"{courseToDelete?.title}"</span>?
+              <br /><br />
+              This action cannot be undone. It will permanently remove all associated material, including enrollments and student progress.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-none border-border">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive hover:bg-destructive/90 rounded-none text-destructive-foreground"
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : null}
-              Delete
+              Delete Permanently
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
+    </div>
+  );
+}
+function CoursesTableSkeleton() {
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="bg-muted/10 border border-border p-6">
+            <Skeleton className="h-8 w-12 mb-2 rounded-none" />
+            <Skeleton className="h-4 w-24 rounded-none" />
+          </div>
+        ))}
+      </div>
+      <div className="border border-border bg-background">
+        <div className="p-6 border-b border-border">
+          <div className="flex gap-4">
+            <Skeleton className="h-10 flex-1 max-w-sm rounded-none" />
+            <Skeleton className="h-10 w-[130px] rounded-none" />
+          </div>
+        </div>
+        <div className="p-0">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex items-center gap-4 p-4 border-b border-border last:border-0">
+              <Skeleton className="h-12 w-16 rounded-none" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-[40%] rounded-none" />
+                <Skeleton className="h-3 w-[20%] rounded-none" />
+              </div>
+              <Skeleton className="h-4 w-20 rounded-none hidden sm:block" />
+              <Skeleton className="h-8 w-8 rounded-none" />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

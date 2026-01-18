@@ -109,73 +109,67 @@ function CertificateCard({ certificate }: { certificate: Certificate }) {
 
   return (
     <>
-      <Card className="overflow-hidden">
-        <div className="bg-gradient-to-br from-amber-100 via-amber-50 to-orange-100 p-6 border-b">
-          <div className="flex items-center justify-center">
+      <Card className="overflow-hidden rounded-none border-border group hover:border-primary/50 transition-colors">
+        <div className="bg-amber-50/50 p-6 border-b border-border text-center relative">
+          <Badge className="absolute top-3 left-3 rounded-none bg-amber-600 hover:bg-amber-600 border-0 uppercase text-[10px] tracking-widest font-bold">Verified</Badge>
+          <div className="flex items-center justify-center py-4">
             <div className="relative">
-              <div className="h-20 w-20 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg">
-                <Award className="h-10 w-10 text-white" />
+              <div className="h-20 w-20 border-2 border-amber-200 bg-amber-100/50 flex items-center justify-center">
+                <Award className="h-10 w-10 text-amber-600" />
               </div>
-              <div className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-green-500 flex items-center justify-center border-4 border-white">
-                <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                </svg>
+              <div className="absolute -bottom-2 -right-2 h-8 w-8 bg-green-600 flex items-center justify-center border-2 border-background">
+                <Check className="h-4 w-4 text-white" />
               </div>
             </div>
-          </div>
-          <div className="text-center mt-4">
-            <Badge className="bg-amber-600 hover:bg-amber-600">Certificate of Completion</Badge>
           </div>
         </div>
         <CardContent className="p-5">
-          <h3 className="font-semibold text-center line-clamp-2 min-h-[48px]">
+          <h3 className="font-heading font-bold uppercase text-center text-sm line-clamp-2 min-h-[40px] mb-4">
             {course?.title || "Course Certificate"}
           </h3>
 
-          <div className="mt-4 space-y-2 text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              <span>
-                Issued {format(new Date(certificate.issuedAt || certificate.createdAt), "MMM d, yyyy")}
-              </span>
+          <div className="space-y-3 mb-6">
+            <div className="flex items-center justify-between text-xs border-b border-border/50 pb-2">
+              <span className="text-muted-foreground font-bold uppercase tracking-wider">Issued</span>
+              <span className="font-mono text-muted-foreground">{format(new Date(certificate.issuedAt || certificate.createdAt), "MMM d, yyyy")}</span>
             </div>
             {(certificate.certificateId || certificate.certificateNumber) && (
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <span className="text-xs">ID: {certificate.certificateId || certificate.certificateNumber}</span>
+              <div className="flex items-center justify-between text-xs border-b border-border/50 pb-2">
+                <span className="text-muted-foreground font-bold uppercase tracking-wider">ID</span>
+                <span className="font-mono text-muted-foreground truncate max-w-[150px]">{certificate.certificateId || certificate.certificateNumber}</span>
               </div>
             )}
           </div>
 
-          <div className="mt-4 flex gap-2">
+          <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
-              className="flex-1"
+              className="flex-1 rounded-none border-border uppercase text-xs font-bold tracking-wider h-9"
               onClick={handleDownload}
               disabled={isDownloading}
             >
               {isDownloading ? (
-                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                <Loader2 className="h-3 w-3 mr-2 animate-spin" />
               ) : (
-                <Download className="h-4 w-4 mr-1" />
+                <Download className="h-3 w-3 mr-2" />
               )}
               Download
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="flex-1"
+              className="flex-1 rounded-none border-border uppercase text-xs font-bold tracking-wider h-9"
               onClick={() => setShareDialogOpen(true)}
             >
-              <Share2 className="h-4 w-4 mr-1" />
+              <Share2 className="h-3 w-3 mr-2" />
               Share
             </Button>
           </div>
 
-          <Button variant="ghost" size="sm" className="w-full mt-2" asChild>
+          <Button variant="ghost" size="sm" className="w-full mt-2 rounded-none uppercase text-xs font-bold tracking-wider h-9 hover:bg-transparent hover:text-primary" asChild>
             <Link href={`/certificates/${certificate._id}`}>
-              <ExternalLink className="h-4 w-4 mr-1" />
-              View Certificate
+              View Certificate <ExternalLink className="h-3 w-3 ml-2" />
             </Link>
           </Button>
         </CardContent>
@@ -183,21 +177,21 @@ function CertificateCard({ certificate }: { certificate: Certificate }) {
 
       {/* Share Dialog */}
       <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-none border-border">
           <DialogHeader>
-            <DialogTitle>Share Certificate</DialogTitle>
+            <DialogTitle className="font-heading font-bold uppercase tracking-wide">Share Certificate</DialogTitle>
             <DialogDescription>
               Share your achievement with others
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-6 pt-4">
             <div className="flex items-center space-x-2">
               <Input
                 value={certificateUrl}
                 readOnly
-                className="flex-1"
+                className="flex-1 rounded-none border-border font-mono text-xs"
               />
-              <Button size="sm" onClick={handleCopyLink}>
+              <Button size="sm" onClick={handleCopyLink} className="rounded-none h-10 w-10 p-0">
                 {copied ? (
                   <Check className="h-4 w-4" />
                 ) : (
@@ -205,32 +199,29 @@ function CertificateCard({ certificate }: { certificate: Certificate }) {
                 )}
               </Button>
             </div>
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-3">
               <Button
                 variant="outline"
-                size="lg"
-                className="flex-1"
+                className="flex-1 rounded-none border-border uppercase text-xs font-bold tracking-wider"
                 onClick={() => handleShareSocial("twitter")}
               >
-                <Twitter className="h-5 w-5 mr-2" />
+                <Twitter className="h-4 w-4 mr-2" />
                 Twitter
               </Button>
               <Button
                 variant="outline"
-                size="lg"
-                className="flex-1"
+                className="flex-1 rounded-none border-border uppercase text-xs font-bold tracking-wider"
                 onClick={() => handleShareSocial("linkedin")}
               >
-                <Linkedin className="h-5 w-5 mr-2" />
+                <Linkedin className="h-4 w-4 mr-2" />
                 LinkedIn
               </Button>
               <Button
                 variant="outline"
-                size="lg"
-                className="flex-1"
+                className="flex-1 rounded-none border-border uppercase text-xs font-bold tracking-wider"
                 onClick={() => handleShareSocial("facebook")}
               >
-                <Facebook className="h-5 w-5 mr-2" />
+                <Facebook className="h-4 w-4 mr-2" />
                 Facebook
               </Button>
             </div>
@@ -243,23 +234,29 @@ function CertificateCard({ certificate }: { certificate: Certificate }) {
 
 function CertificateCardSkeleton() {
   return (
-    <Card className="overflow-hidden">
-      <div className="bg-gradient-to-br from-gray-100 to-gray-50 p-6 border-b">
+    <Card className="overflow-hidden rounded-none border-border">
+      <div className="bg-muted/10 p-6 border-b border-border">
         <div className="flex items-center justify-center">
-          <Skeleton className="h-20 w-20 rounded-full" />
-        </div>
-        <div className="flex justify-center mt-4">
-          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-20 w-20 rounded-none" />
         </div>
       </div>
       <CardContent className="p-5 space-y-4">
-        <Skeleton className="h-5 w-full" />
-        <Skeleton className="h-5 w-3/4 mx-auto" />
-        <Skeleton className="h-4 w-32" />
-        <div className="flex gap-2">
-          <Skeleton className="h-9 flex-1" />
-          <Skeleton className="h-9 flex-1" />
+        <Skeleton className="h-5 w-full rounded-none" />
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <Skeleton className="h-3 w-12 rounded-none" />
+            <Skeleton className="h-3 w-20 rounded-none" />
+          </div>
+          <div className="flex justify-between">
+            <Skeleton className="h-3 w-8 rounded-none" />
+            <Skeleton className="h-3 w-24 rounded-none" />
+          </div>
         </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-9 flex-1 rounded-none" />
+          <Skeleton className="h-9 flex-1 rounded-none" />
+        </div>
+        <Skeleton className="h-8 w-full mt-2 rounded-none" />
       </CardContent>
     </Card>
   );
@@ -271,10 +268,10 @@ export default function CertificatesPage() {
   const certificates = certificatesResponse?.data || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">My Certificates</h1>
+        <h1 className="text-3xl font-heading font-bold uppercase tracking-tight">My Certificates</h1>
         <p className="text-muted-foreground mt-1">
           View and download your earned certificates
         </p>
@@ -282,36 +279,36 @@ export default function CertificatesPage() {
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
-              <Award className="h-6 w-6 text-amber-600" />
+        <Card className="rounded-none border-border bg-card">
+          <CardContent className="p-6 flex items-center gap-4">
+            <div className="h-12 w-12 border border-amber-200 bg-amber-50 text-amber-600 flex items-center justify-center">
+              <Award className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{certificates.length}</p>
-              <p className="text-sm text-muted-foreground">Total Certificates</p>
+              <p className="text-3xl font-light text-foreground">{certificates.length}</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">Total Certificates</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-              <BookOpen className="h-6 w-6 text-green-600" />
+        <Card className="rounded-none border-border bg-card">
+          <CardContent className="p-6 flex items-center gap-4">
+            <div className="h-12 w-12 border border-green-200 bg-green-50 text-green-600 flex items-center justify-center">
+              <BookOpen className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-2xl font-bold">{certificates.length}</p>
-              <p className="text-sm text-muted-foreground">Courses Completed</p>
+              <p className="text-3xl font-light text-foreground">{certificates.length}</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">Courses Completed</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-              <Share2 className="h-6 w-6 text-blue-600" />
+        <Card className="rounded-none border-border bg-card">
+          <CardContent className="p-6 flex items-center gap-4">
+            <div className="h-12 w-12 border border-blue-200 bg-blue-50 text-blue-600 flex items-center justify-center">
+              <Share2 className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-2xl font-bold">0</p>
-              <p className="text-sm text-muted-foreground">Shared Certificates</p>
+              <p className="text-3xl font-light text-foreground">0</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">Shared Certificates</p>
             </div>
           </CardContent>
         </Card>
@@ -331,14 +328,16 @@ export default function CertificatesPage() {
           ))}
         </div>
       ) : (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Award className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold">No certificates yet</h3>
-            <p className="text-muted-foreground mt-2 max-w-md mx-auto">
+        <Card className="rounded-none border-border bg-muted/5 border-dashed">
+          <CardContent className="py-20 text-center">
+            <div className="h-16 w-16 mx-auto mb-6 border border-border bg-background flex items-center justify-center text-muted-foreground">
+              <Award className="h-8 w-8" />
+            </div>
+            <h3 className="text-xl font-heading font-bold uppercase tracking-wide">No certificates yet</h3>
+            <p className="text-muted-foreground mt-2 max-w-md mx-auto text-sm">
               Complete courses to earn certificates that showcase your achievements.
             </p>
-            <Button className="mt-6" asChild>
+            <Button className="mt-8 rounded-none font-bold uppercase tracking-wider" asChild>
               <Link href="/courses">Browse Courses</Link>
             </Button>
           </CardContent>

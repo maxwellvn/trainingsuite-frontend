@@ -21,6 +21,7 @@ import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { useAuthStore } from "@/stores";
 import { authApi } from "@/lib/api";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/utils";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -46,8 +47,7 @@ export default function LoginPage() {
         router.push("/dashboard");
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Invalid email or password";
-      toast.error(errorMessage);
+      toast.error(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }

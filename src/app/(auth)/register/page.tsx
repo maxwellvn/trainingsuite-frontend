@@ -20,7 +20,7 @@ import {
 import { registerSchema, type RegisterFormData } from "@/lib/validations/auth";
 import { authApi } from "@/lib/api";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 
 const passwordRequirements = [
   { id: "length", label: "At least 8 characters", test: (p: string) => p.length >= 8 },
@@ -66,8 +66,7 @@ export default function RegisterPage() {
         router.push("/login");
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to create account";
-      toast.error(errorMessage);
+      toast.error(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }

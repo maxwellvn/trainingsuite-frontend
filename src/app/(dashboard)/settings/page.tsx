@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   User,
@@ -30,17 +30,40 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks";
 import { useToast } from "@/hooks/use-toast";
-import { getInitials } from "@/lib/utils";
+import { getInitials, getErrorMessage } from "@/lib/utils";
 import { apiClient } from "@/lib/api/client";
 import { authApi } from "@/lib/api/auth";
+import { useAuthStore } from "@/stores";
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { setUser } = useAuthStore();
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+  // Profile form state
+  const [profileForm, setProfileForm] = useState({
+    firstName: "",
+    lastName: "",
+    bio: "",
+    phone: "",
+  });
+
+  // Initialize form with user data
+  useEffect(() => {
+    if (user) {
+      const nameParts = user.name?.split(" ") || [];
+      setProfileForm({
+        firstName: nameParts[0] || "",
+        lastName: nameParts.slice(1).join(" ") || "",
+        bio: user.bio || "",
+        phone: user.phone || "",
+      });
+    }
+  }, [user]);
 
   // Upload avatar mutation
   const uploadAvatarMutation = useMutation({
@@ -66,12 +89,34 @@ export default function SettingsPage() {
       return uploadResponse.data.data.fileUrl;
     },
     onSuccess: (fileUrl) => {
-      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
-      setAvatarPreview(null);
-      toast({ title: "Avatar updated successfully!" });
+      console.log("[Settings] Avatar uploaded, fileUrl:", fileUrl);
+
+      // Preload the new image before clearing preview
+      const img = new Image();
+      img.onload = () => {
+        console.log("[Settings] New avatar image loaded successfully");
+        // Immediately update the store with new avatar URL
+        if (user) {
+          setUser({ ...user, avatar: fileUrl });
+        }
+        queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+        setAvatarPreview(null);
+        toast({ title: "Avatar updated successfully!" });
+      };
+      img.onerror = (e) => {
+        console.error("[Settings] Failed to load new avatar image:", e);
+        // Still update store but keep showing something
+        if (user) {
+          setUser({ ...user, avatar: fileUrl });
+        }
+        queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+        setAvatarPreview(null);
+        toast({ title: "Avatar updated but image may take time to load", variant: "default" });
+      };
+      img.src = fileUrl;
     },
-    onError: () => {
-      toast({ title: "Failed to upload avatar", variant: "destructive" });
+    onError: (error) => {
+      toast({ title: getErrorMessage(error), variant: "destructive" });
       setAvatarPreview(null);
     },
   });
@@ -105,9 +150,24 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
+    try {
+      const fullName = `${profileForm.firstName} ${profileForm.lastName}`.trim();
+      const response = await authApi.updateProfile({
+        name: fullName,
+        bio: profileForm.bio,
+        phone: profileForm.phone,
+      });
+
+      if (response.success && response.data) {
+        setUser(response.data);
+        queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+        toast({ title: "Profile updated successfully!" });
+      }
+    } catch (error) {
+      toast({ title: getErrorMessage(error), variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -205,7 +265,8 @@ export default function SettingsPage() {
                     <Label htmlFor="firstName">First Name</Label>
                     <Input
                       id="firstName"
-                      defaultValue={user?.name?.split(" ")[0] || ""}
+                      value={profileForm.firstName}
+                      onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
                       placeholder="Enter your first name"
                     />
                   </div>
@@ -213,7 +274,8 @@ export default function SettingsPage() {
                     <Label htmlFor="lastName">Last Name</Label>
                     <Input
                       id="lastName"
-                      defaultValue={user?.name?.split(" ").slice(1).join(" ") || ""}
+                      value={profileForm.lastName}
+                      onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
                       placeholder="Enter your last name"
                     />
                   </div>
@@ -223,25 +285,30 @@ export default function SettingsPage() {
                   <Input
                     id="email"
                     type="email"
-                    defaultValue={user?.email || ""}
+                    value={user?.email || ""}
+                    disabled
                     placeholder="Enter your email"
+                    className="bg-muted"
                   />
+                  <p className="text-xs text-muted-foreground">Email cannot be changed</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="bio">Bio</Label>
                   <Textarea
                     id="bio"
-                    defaultValue={user?.bio || ""}
+                    value={profileForm.bio}
+                    onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
                     placeholder="Tell us about yourself..."
                     rows={4}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="title">Professional Title</Label>
+                  <Label htmlFor="phone">Phone Number</Label>
                   <Input
-                    id="title"
-                    defaultValue={user?.title || ""}
-                    placeholder="e.g. Software Engineer"
+                    id="phone"
+                    value={profileForm.phone}
+                    onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                    placeholder="Enter your phone number"
                   />
                 </div>
                 <Button onClick={handleSave} disabled={isSaving}>

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/stores";
 import { authApi } from "@/lib/api";
 import type { User } from "@/types";
@@ -33,18 +33,11 @@ export function useAuth() {
     setLoading(isLoading);
   }, [data, error, isLoading, setUser, setLoading]);
 
-  // Logout mutation
-  const logoutMutation = useMutation({
-    mutationFn: authApi.logout,
-    onSuccess: () => {
-      storeLogout();
-      queryClient.clear();
-      router.push("/login");
-    },
-  });
-
+  // Logout function - just clear local state (no API call needed for JWT auth)
   const logout = () => {
-    logoutMutation.mutate();
+    storeLogout();
+    queryClient.clear();
+    router.push("/login");
   };
 
   return {
@@ -52,7 +45,7 @@ export function useAuth() {
     isAuthenticated,
     isLoading,
     logout,
-    isLoggingOut: logoutMutation.isPending,
+    isLoggingOut: false,
   };
 }
 

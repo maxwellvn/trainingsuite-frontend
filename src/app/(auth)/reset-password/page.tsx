@@ -19,7 +19,7 @@ import {
 import { resetPasswordSchema, type ResetPasswordFormData } from "@/lib/validations/auth";
 import { authApi } from "@/lib/api";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 
 const passwordRequirements = [
   { id: "length", label: "At least 8 characters", test: (p: string) => p.length >= 8 },
@@ -64,8 +64,7 @@ function ResetPasswordForm() {
         setIsSuccess(true);
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to reset password. The link may have expired.";
-      toast.error(errorMessage);
+      toast.error(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }

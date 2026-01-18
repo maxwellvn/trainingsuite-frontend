@@ -15,7 +15,7 @@ export default function DashboardLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <DashboardSidebar
@@ -26,7 +26,7 @@ export default function DashboardLayout({
 
       {/* Mobile Sidebar */}
       <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-        <SheetContent side="left" className="p-0 w-[260px]">
+        <SheetContent side="left" className="p-0 w-[260px] border-r border-border">
           <DashboardSidebar />
         </SheetContent>
       </Sheet>
@@ -34,12 +34,14 @@ export default function DashboardLayout({
       {/* Main Content */}
       <div
         className={cn(
-          "transition-all duration-300",
+          "transition-all duration-300 min-h-screen flex flex-col",
           sidebarCollapsed ? "lg:pl-[70px]" : "lg:pl-[260px]"
         )}
       >
         <DashboardHeader onMenuClick={() => setMobileMenuOpen(true)} />
-        <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="flex-1 p-6 md:p-8 lg:p-10 max-w-7xl mx-auto w-full animate-in fade-in duration-500">
+          {children}
+        </main>
       </div>
     </div>
   );

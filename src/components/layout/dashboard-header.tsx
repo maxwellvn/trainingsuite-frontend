@@ -63,7 +63,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-border bg-background px-4 sm:px-6">
       {/* Mobile menu button */}
       <Button
         variant="ghost"
@@ -80,7 +80,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search training..."
-            className="w-full pl-9 bg-muted/50"
+            className="w-full pl-9 h-10 rounded-none bg-muted/30 border-transparent focus:bg-background focus:border-primary transition-all"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -88,22 +88,20 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
       </form>
 
       {/* Right side */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 ml-auto">
         {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </Badge>
+                <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-600 ring-2 ring-background" />
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
-            <DropdownMenuLabel className="flex items-center justify-between">
-              <span>Notifications</span>
+          <DropdownMenuContent align="end" className="w-80 rounded-none border-border">
+            <DropdownMenuLabel className="flex items-center justify-between p-4 pb-2">
+              <span className="font-heading font-bold">Notifications</span>
               {unreadCount > 0 && (
                 <span className="text-xs text-muted-foreground">{unreadCount} unread</span>
               )}
@@ -114,35 +112,29 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
                 notifications.slice(0, 5).map((notification) => (
                   <DropdownMenuItem
                     key={notification._id}
-                    className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${!notification.isRead ? "bg-primary/5" : ""}`}
+                    className="flex flex-col items-start gap-1 p-3 cursor-pointer rounded-none focus:bg-muted"
                     onClick={() => handleNotificationClick(notification)}
                   >
                     <div className="flex items-center gap-2 w-full">
-                      <p className="text-sm font-medium flex-1">{notification.title}</p>
+                      <p className="text-sm font-medium flex-1 line-clamp-1">{notification.title}</p>
                       {!notification.isRead && (
-                        <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground line-clamp-2">
                       {notification.message}
                     </p>
-                    <p className="text-xs text-muted-foreground/70">
+                    <p className="text-xs text-muted-foreground/50 mt-1">
                       {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                     </p>
                   </DropdownMenuItem>
                 ))
               ) : (
-                <div className="p-4 text-center text-sm text-muted-foreground">
-                  No notifications yet
+                <div className="p-8 text-center text-sm text-muted-foreground">
+                  No new notifications
                 </div>
               )}
             </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/notifications" className="w-full justify-center">
-                View all notifications
-              </Link>
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -150,46 +142,46 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2 px-2">
-                <Avatar className="h-8 w-8">
+              <Button variant="ghost" className="flex items-center gap-3 pl-2 pr-1 h-10 rounded-none hover:bg-muted/50">
+                <Avatar className="h-8 w-8 border border-border">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                  <AvatarFallback className="bg-muted text-muted-foreground text-xs font-medium">
                     {getInitials(user.name)}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden sm:inline-block text-sm font-medium">
-                  {user.name.split(" ")[0]}
-                </span>
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                <div className="hidden sm:flex flex-col items-start gap-0.5 text-sm">
+                  <span className="font-semibold leading-none">{user.name.split(" ")[0]}</span>
+                </div>
+                <ChevronDown className="h-3 w-3 text-muted-foreground opacity-50" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="font-normal">
+            <DropdownMenuContent align="end" className="w-56 rounded-none border-border">
+              <DropdownMenuLabel className="font-normal p-4 pb-2">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">{user.name}</p>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                  <p className="text-sm font-semibold leading-none">{user.name}</p>
+                  <p className="text-xs text-muted-foreground leading-none">{user.email}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="rounded-none cursor-pointer">
                 <Link href="/dashboard">
                   <User className="mr-2 h-4 w-4" />
                   Dashboard
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="rounded-none cursor-pointer">
                 <Link href="/my-courses">
                   <BookOpen className="mr-2 h-4 w-4" />
                   My Courses
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="rounded-none cursor-pointer">
                 <Link href="/certificates">
                   <Award className="mr-2 h-4 w-4" />
                   Certificates
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
+              <DropdownMenuItem asChild className="rounded-none cursor-pointer">
                 <Link href="/settings">
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
@@ -199,7 +191,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
               <DropdownMenuItem
                 onClick={logout}
                 disabled={isLoggingOut}
-                className="text-destructive focus:text-destructive"
+                className="text-destructive focus:text-destructive rounded-none cursor-pointer"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 {isLoggingOut ? "Signing out..." : "Sign out"}

@@ -139,29 +139,29 @@ export default function AdminLayout({
   };
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-background">
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-40 h-screen bg-slate-900 text-white transition-all duration-300",
-          collapsed ? "w-16" : "w-64"
+          "fixed top-0 left-0 z-40 h-screen bg-zinc-900 text-white transition-all duration-300 border-r border-zinc-800",
+          collapsed ? "w-[70px]" : "w-[260px]"
         )}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-700">
+        <div className="h-16 flex items-center justify-between px-6 border-b border-zinc-800">
           {!collapsed && (
-            <Link href="/admin" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <Shield className="h-5 w-5 text-white" />
+            <Link href="/admin" className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-none bg-white flex items-center justify-center">
+                <Shield className="h-4 w-4 text-zinc-900" />
               </div>
-              <span className="font-semibold">Admin Panel</span>
+              <span className="font-bold tracking-tight text-sm">ADMIN PANEL</span>
             </Link>
           )}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setCollapsed(!collapsed)}
-            className="text-slate-400 hover:text-white hover:bg-slate-800"
+            className="text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-none h-8 w-8"
           >
             {collapsed ? (
               <ChevronRight className="h-4 w-4" />
@@ -172,61 +172,67 @@ export default function AdminLayout({
         </div>
 
         {/* Navigation */}
-        <nav className="p-2 space-y-4 overflow-y-auto max-h-[calc(100vh-180px)]">
-          {adminNavSections.map((section) => (
-            <div key={section.title}>
-              {!collapsed && (
-                <h3 className="px-3 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  {section.title}
-                </h3>
-              )}
-              <div className="space-y-1">
-                {section.items.map((item) => {
-                  const isActive = pathname === item.href ||
-                    (item.href !== "/admin" && pathname.startsWith(item.href));
-                  const Icon = item.icon;
+        <nav className="flex-1 overflow-y-auto py-6 px-4">
+          <div className="space-y-8">
+            {adminNavSections.map((section) => (
+              <div key={section.title}>
+                {!collapsed && (
+                  <h3 className="px-2 mb-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">
+                    {section.title}
+                  </h3>
+                )}
+                <div className="space-y-1">
+                  {section.items.map((item) => {
+                    const isActive = pathname === item.href ||
+                      (item.href !== "/admin" && pathname.startsWith(item.href));
+                    const Icon = item.icon;
 
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
-                        isActive
-                          ? "bg-primary text-white"
-                          : "text-slate-400 hover:text-white hover:bg-slate-800"
-                      )}
-                    >
-                      <Icon className="h-5 w-5 shrink-0" />
-                      {!collapsed && <span className="text-sm">{item.label}</span>}
-                    </Link>
-                  );
-                })}
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors border-l-2 border-transparent hover:bg-zinc-800/50",
+                          isActive
+                            ? "border-white text-white bg-zinc-800"
+                            : "text-zinc-400 hover:text-white",
+                          collapsed && "justify-center px-2 border-l-0"
+                        )}
+                        title={collapsed ? item.label : undefined}
+                      >
+                        <Icon className={cn("h-4 w-4 shrink-0", isActive && "text-white")} />
+                        {!collapsed && <span>{item.label}</span>}
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </nav>
 
         {/* User Section */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-zinc-800 bg-zinc-900">
           {collapsed ? (
-            <Avatar className="h-10 w-10 mx-auto">
-              <AvatarImage src={user?.avatar} />
-              <AvatarFallback className="bg-primary text-white">
-                {getInitials(user?.name || "Admin")}
-              </AvatarFallback>
-            </Avatar>
-          ) : (
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
+            <div className="flex justify-center">
+              <Avatar className="h-9 w-9 border border-zinc-700">
                 <AvatarImage src={user?.avatar} />
-                <AvatarFallback className="bg-primary text-white">
-                  {getInitials(user?.name || "Admin")}
+                <AvatarFallback className="bg-zinc-800 text-white text-xs">
+                  {getInitials(user?.name || "AD")}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 px-2">
+              <Avatar className="h-9 w-9 border border-zinc-700">
+                <AvatarImage src={user?.avatar} />
+                <AvatarFallback className="bg-zinc-800 text-white text-xs">
+                  {getInitials(user?.name || "AD")}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{user?.name}</p>
-                <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+                <p className="text-sm font-semibold truncate text-white">{user?.name}</p>
+                <p className="text-xs text-zinc-500 truncate">{user?.email}</p>
               </div>
             </div>
           )}
@@ -234,11 +240,11 @@ export default function AdminLayout({
       </aside>
 
       {/* Main Content */}
-      <div className={cn("transition-all duration-300", collapsed ? "ml-16" : "ml-64")}>
+      <div className={cn("transition-all duration-300 min-h-screen flex flex-col", collapsed ? "ml-[70px]" : "ml-[260px]")}>
         {/* Header */}
-        <header className="h-16 bg-background border-b sticky top-0 z-30 flex items-center justify-between px-6">
+        <header className="h-16 bg-background border-b border-border sticky top-0 z-30 flex items-center justify-between px-6 md:px-8">
           <div>
-            <h1 className="text-lg font-semibold">
+            <h1 className="text-lg font-heading font-bold uppercase tracking-wide">
               {adminNavSections
                 .flatMap((section) => section.items)
                 .find((item) =>
@@ -252,18 +258,16 @@ export default function AdminLayout({
             {/* Notifications */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
+                <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
+                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-600 ring-2 ring-background" />
                   )}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80">
-                <DropdownMenuLabel className="flex items-center justify-between">
-                  <span>Notifications</span>
+              <DropdownMenuContent align="end" className="w-80 rounded-none border-border">
+                <DropdownMenuLabel className="flex items-center justify-between p-4 pb-2">
+                  <span className="font-heading font-bold">Notifications</span>
                   {unreadCount > 0 && (
                     <span className="text-xs text-muted-foreground">{unreadCount} unread</span>
                   )}
@@ -274,67 +278,64 @@ export default function AdminLayout({
                     notifications.slice(0, 5).map((notification) => (
                       <DropdownMenuItem
                         key={notification._id}
-                        className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${!notification.isRead ? "bg-primary/5" : ""}`}
+                        className="flex flex-col items-start gap-1 p-3 cursor-pointer rounded-none focus:bg-muted"
                         onClick={() => handleNotificationClick(notification)}
                       >
                         <div className="flex items-center gap-2 w-full">
-                          <p className="text-sm font-medium flex-1">{notification.title}</p>
+                          <p className="text-sm font-medium flex-1 line-clamp-1">{notification.title}</p>
                           {!notification.isRead && (
-                            <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground line-clamp-2">
                           {notification.message}
                         </p>
-                        <p className="text-xs text-muted-foreground/70">
+                        <p className="text-xs text-muted-foreground/50 mt-1">
                           {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                         </p>
                       </DropdownMenuItem>
                     ))
                   ) : (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
-                      No notifications yet
+                    <div className="p-8 text-center text-sm text-muted-foreground">
+                      No new notifications
                     </div>
                   )}
                 </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/notifications" className="w-full justify-center">
-                    View all notifications
-                  </Link>
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
+                <Button variant="ghost" className="flex items-center gap-2 pl-2 pr-1 h-9 rounded-none hover:bg-muted/50">
+                  <Avatar className="h-7 w-7 border border-border">
                     <AvatarImage src={user?.avatar} />
-                    <AvatarFallback className="bg-primary text-white text-sm">
-                      {getInitials(user?.name || "Admin")}
+                    <AvatarFallback className="bg-muted text-muted-foreground text-xs font-medium">
+                      {getInitials(user?.name || "AD")}
                     </AvatarFallback>
                   </Avatar>
+                  <span className="hidden sm:inline-block text-sm font-medium">
+                    Admin
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col">
-                    <span>{user?.name}</span>
-                    <span className="text-xs text-muted-foreground font-normal">
+              <DropdownMenuContent align="end" className="w-56 rounded-none border-border">
+                <DropdownMenuLabel className="p-4 pb-2">
+                  <div className="flex flex-col space-y-1">
+                    <span className="font-semibold leading-none">{user?.name}</span>
+                    <span className="text-xs text-muted-foreground font-normal leading-none">
                       {user?.email}
                     </span>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="rounded-none cursor-pointer">
                   <Link href="/dashboard">
                     <LayoutDashboard className="h-4 w-4 mr-2" />
                     User Dashboard
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="rounded-none cursor-pointer">
                   <Link href="/admin/settings">
                     <Settings className="h-4 w-4 mr-2" />
                     Settings
@@ -343,7 +344,7 @@ export default function AdminLayout({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={logout}
-                  className="text-red-600 focus:text-red-600"
+                  className="text-destructive focus:text-destructive rounded-none cursor-pointer"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign out
@@ -354,7 +355,9 @@ export default function AdminLayout({
         </header>
 
         {/* Page Content */}
-        <main className="p-6">{children}</main>
+        <main className="flex-1 p-6 md:p-8 lg:p-10 w-full animate-in fade-in duration-500">
+          {children}
+        </main>
       </div>
     </div>
   );
