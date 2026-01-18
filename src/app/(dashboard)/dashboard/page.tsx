@@ -71,9 +71,6 @@ function CourseProgressCard({ enrollment }: { enrollment: Enrollment }) {
       <div className="flex-1 min-w-0">
         <Badge variant="outline" className="mb-1">Course</Badge>
         <h4 className="font-semibold truncate">{course.title}</h4>
-        <p className="text-xs text-muted-foreground">
-          {typeof course.instructor === "object" ? course.instructor.name : "Instructor"}
-        </p>
         <div className="mt-2 flex items-center gap-3">
           <Progress value={progress} className="h-2 flex-1" />
           <span className="text-sm text-muted-foreground whitespace-nowrap">
