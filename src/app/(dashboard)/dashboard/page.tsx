@@ -62,8 +62,18 @@ function CourseProgressCard({ enrollment }: { enrollment: Enrollment }) {
   return (
     <div className="group flex flex-col sm:flex-row sm:items-center gap-4 p-4 border border-border bg-card hover:bg-muted/30 transition-colors">
       <div className="relative h-20 w-full sm:w-32 bg-muted flex items-center justify-center overflow-hidden shrink-0 group-hover:opacity-90 transition-opacity">
-        <div className="absolute inset-0 bg-primary/10" />
-        <PlayCircle className="h-8 w-8 text-primary relative z-10 group-hover:scale-110 transition-transform" />
+        {course.thumbnail ? (
+          <img
+            src={course.thumbnail}
+            alt={course.title}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <>
+            <div className="absolute inset-0 bg-primary/10" />
+            <PlayCircle className="h-8 w-8 text-primary relative z-10 group-hover:scale-110 transition-transform" />
+          </>
+        )}
         <Badge className="absolute top-2 left-2 rounded-none text-[10px] font-bold uppercase tracking-wider border-0 bg-background/80 text-foreground backdrop-blur-sm" variant="secondary">
           {course.level}
         </Badge>

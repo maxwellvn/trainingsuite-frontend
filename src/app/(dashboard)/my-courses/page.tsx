@@ -42,8 +42,16 @@ function CourseCard({ enrollment, index }: { enrollment: Enrollment; index: numb
   return (
     <Link href={`/courses/${course.slug || course._id}/learn`}>
       <Card className="rounded-none border-border group cursor-pointer h-full hover:border-primary/50 transition-colors bg-card">
-        <div className={`h-32 ${colorClass} border-b relative flex items-center justify-center`}>
-          <PlayCircle className="h-10 w-10 opacity-50 group-hover:scale-110 group-hover:opacity-100 transition-all" />
+        <div className={`h-32 ${colorClass} border-b relative flex items-center justify-center overflow-hidden`}>
+          {course.thumbnail ? (
+            <img
+              src={course.thumbnail}
+              alt={course.title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <PlayCircle className="h-10 w-10 opacity-50 group-hover:scale-110 group-hover:opacity-100 transition-all" />
+          )}
           <div className="absolute top-3 left-3">
             <Badge variant="secondary" className="rounded-none text-[10px] font-bold uppercase tracking-wider border-0 bg-background/80 backdrop-blur-sm">
               {course.level}
@@ -99,8 +107,16 @@ function CourseListItem({ enrollment, index }: { enrollment: Enrollment; index: 
       <Card className="rounded-none border-border group hover:border-primary/50 transition-colors">
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-5">
-            <div className={`h-32 sm:h-24 w-full sm:w-36 ${colorClass} border border-border/50 relative shrink-0 flex items-center justify-center`}>
-              <PlayCircle className="h-8 w-8 opacity-50 group-hover:scale-110 group-hover:opacity-100 transition-all" />
+            <div className={`h-32 sm:h-24 w-full sm:w-36 ${colorClass} border border-border/50 relative shrink-0 flex items-center justify-center overflow-hidden`}>
+              {course.thumbnail ? (
+                <img
+                  src={course.thumbnail}
+                  alt={course.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ) : (
+                <PlayCircle className="h-8 w-8 opacity-50 group-hover:scale-110 group-hover:opacity-100 transition-all" />
+              )}
               {isCompleted && (
                 <div className="absolute top-1 right-1">
                   <CheckCircle className="h-4 w-4" />

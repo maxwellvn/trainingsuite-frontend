@@ -80,7 +80,14 @@ function CourseCard({ course, index, enrollment }: { course: Course; index: numb
   return (
     <Link href={`/courses/${course.slug || course._id}`}>
       <Card className="overflow-hidden group cursor-pointer h-full hover:shadow-lg transition-shadow">
-        <div className={`h-36 ${gradient} relative`}>
+        <div className={`h-36 ${gradient} relative overflow-hidden`}>
+          {course.thumbnail && (
+            <img
+              src={course.thumbnail}
+              alt={course.title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
           <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
           <div className="absolute top-3 left-3 flex gap-2">
             <Badge variant="secondary" className="text-xs capitalize">
