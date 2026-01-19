@@ -5,11 +5,11 @@ import {
   Search,
   HelpCircle,
   BookOpen,
-  CreditCard,
   User,
   Award,
   Video,
   MessageSquare,
+  BarChart,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ const categories = [
   { id: "getting-started", label: "Getting Started", icon: BookOpen },
   { id: "account", label: "Account & Profile", icon: User },
   { id: "courses", label: "Courses & Learning", icon: Video },
-  { id: "payments", label: "Payments & Billing", icon: CreditCard },
+  { id: "progress", label: "Progress & Tracking", icon: BarChart },
   { id: "certificates", label: "Certificates", icon: Award },
   { id: "technical", label: "Technical Issues", icon: HelpCircle },
 ];
@@ -41,17 +41,22 @@ const faqs = [
   {
     category: "getting-started",
     question: "How do I create an account?",
-    answer: "Creating an account is easy! Click the 'Sign Up' button at the top of the page, enter your email address and create a password. You can also sign up using your Google or social media accounts for faster registration.",
+    answer: "Creating an account is easy! Click the 'Sign Up' button at the top of the page, enter your email address and create a password. You can also sign up using your Google account for faster registration.",
   },
   {
     category: "getting-started",
     question: "Is Training Suite free to use?",
-    answer: "Training Suite offers both free and paid courses. You can browse our course catalog and access many free courses without any payment. Premium courses require a one-time purchase or subscription.",
+    answer: "Yes! All training materials on our platform are completely free. Simply create an account and start learning immediately.",
   },
   {
     category: "getting-started",
     question: "How do I enroll in a course?",
-    answer: "To enroll in a course, navigate to the course page and click the 'Enroll' button. For free courses, you'll have immediate access. For paid courses, you'll be prompted to complete the payment before gaining access.",
+    answer: "To enroll in a course, navigate to the course page and click the 'Start Training' button. You'll have immediate access to all course materials once enrolled.",
+  },
+  {
+    category: "getting-started",
+    question: "Do I need any special software to take courses?",
+    answer: "No special software is required. All you need is a modern web browser (Chrome, Firefox, Safari, or Edge) and an internet connection. Our platform works on desktop, tablet, and mobile devices.",
   },
   {
     category: "account",
@@ -65,58 +70,78 @@ const faqs = [
   },
   {
     category: "account",
+    question: "How do I update my profile information?",
+    answer: "Go to Settings > Profile to update your name, avatar, and other profile information. Changes are saved automatically.",
+  },
+  {
+    category: "account",
     question: "How do I delete my account?",
-    answer: "To delete your account, go to Settings > Account and scroll to the bottom to find the 'Delete Account' option. Please note that this action is irreversible and you'll lose access to all your courses and certificates.",
+    answer: "To delete your account, go to Settings > Account and scroll to the bottom to find the 'Delete Account' option. Please note that this action is irreversible and you'll lose access to all your progress and certificates.",
   },
   {
     category: "courses",
-    question: "How long do I have access to a course after purchasing?",
-    answer: "Once you purchase a course, you have lifetime access to all course materials, including any future updates the instructor makes. You can learn at your own pace without any time limits.",
+    question: "How long do I have access to a course?",
+    answer: "Once you enroll in a course, you have lifetime access to all course materials. You can learn at your own pace without any time limits.",
   },
   {
     category: "courses",
-    question: "Can I download course videos for offline viewing?",
-    answer: "Currently, course videos are available for streaming only and cannot be downloaded. However, you can download supplementary materials like PDFs, worksheets, and code files if provided by the instructor.",
-  },
-  {
-    category: "courses",
-    question: "What if I'm not satisfied with a course?",
-    answer: "We offer a 30-day money-back guarantee for all paid courses. If you're not satisfied with your purchase, you can request a refund within 30 days of enrollment, no questions asked.",
+    question: "Can I download course materials?",
+    answer: "Yes, you can download supplementary materials like PDFs, worksheets, and documents if provided by the instructor. Video content is available for streaming only.",
   },
   {
     category: "courses",
     question: "Can I access courses on mobile devices?",
-    answer: "Yes! Training Suite is fully responsive and works on all devices. You can access your courses from your smartphone, tablet, or computer. We also have mobile apps available for iOS and Android.",
+    answer: "Yes! Training Suite is fully responsive and works on all devices. You can access your courses from your smartphone, tablet, or computer.",
   },
   {
-    category: "payments",
-    question: "What payment methods do you accept?",
-    answer: "We accept all major credit cards (Visa, MasterCard, American Express), PayPal, and bank transfers in select regions. All payments are processed securely through our payment partners.",
+    category: "courses",
+    question: "How do I leave a review for a course?",
+    answer: "You must be enrolled in a course to leave a review. Go to the course page, navigate to the Reviews tab, and submit your rating and feedback. Your review helps other learners make informed decisions.",
   },
   {
-    category: "payments",
-    question: "Are there any hidden fees?",
-    answer: "No, the price you see is the price you pay. There are no hidden fees or additional charges. Any applicable taxes will be displayed before checkout based on your location.",
+    category: "progress",
+    question: "How is my progress tracked?",
+    answer: "Your progress is automatically tracked as you complete lessons. Each lesson you finish contributes to your overall course completion percentage, which is displayed on your dashboard and course page.",
   },
   {
-    category: "payments",
-    question: "How do I request a refund?",
-    answer: "To request a refund, go to your purchase history in Settings > Payments, find the course, and click 'Request Refund'. Alternatively, contact our support team with your order details.",
+    category: "progress",
+    question: "Can I resume where I left off?",
+    answer: "Yes! Your progress is saved automatically. When you return to a course, you can continue from exactly where you left off. Use the 'Continue Learning' button to jump back in.",
+  },
+  {
+    category: "progress",
+    question: "How do I mark a lesson as complete?",
+    answer: "Lessons are marked as complete when you finish watching the video or reading the content. Click the 'Mark as Complete' button at the end of each lesson to track your progress.",
+  },
+  {
+    category: "progress",
+    question: "Where can I see all my enrolled courses?",
+    answer: "You can view all your enrolled courses on your Dashboard. It shows your active courses, progress, and recently accessed materials.",
   },
   {
     category: "certificates",
     question: "How do I earn a certificate?",
-    answer: "To earn a certificate, you must complete all lessons in a course. Once completed, your certificate will be automatically generated.",
+    answer: "To earn a certificate, you must complete all lessons in a course (100% progress). Once completed, your certificate will be automatically generated and available for download.",
   },
   {
     category: "certificates",
-    question: "Are certificates shareable on LinkedIn?",
-    answer: "Yes! You can easily share your certificates on LinkedIn and other social media platforms. Each certificate has a unique URL that you can add to your LinkedIn profile.",
+    question: "How do I download my certificate?",
+    answer: "Go to your Certificates page from the dashboard. Find the certificate you want and click the 'Download' button to get a PDF copy of your certificate.",
+  },
+  {
+    category: "certificates",
+    question: "Can I share my certificates on social media?",
+    answer: "Yes! Each certificate has sharing options for LinkedIn, Twitter, and Facebook. You can also copy the certificate link to share anywhere.",
   },
   {
     category: "certificates",
     question: "Do certificates expire?",
     answer: "No, our certificates do not expire. Once earned, your certificate is yours forever and can be accessed from your profile at any time.",
+  },
+  {
+    category: "certificates",
+    question: "Can I verify a certificate?",
+    answer: "Yes, each certificate has a unique certificate number that can be verified. Share your certificate link or number with anyone who needs to verify your completion.",
   },
   {
     category: "technical",
@@ -130,8 +155,13 @@ const faqs = [
   },
   {
     category: "technical",
+    question: "My progress isn't saving. What should I do?",
+    answer: "Make sure you're logged in and have a stable internet connection. Try refreshing the page. If the issue persists, try logging out and back in, or contact our support team.",
+  },
+  {
+    category: "technical",
     question: "How do I report a bug or issue?",
-    answer: "You can report bugs through our contact form or by emailing support@trainingsuite.com. Please include details about the issue, your browser/device, and screenshots if possible to help us resolve it quickly.",
+    answer: "You can report bugs through our contact form or by emailing support. Please include details about the issue, your browser/device, and screenshots if possible to help us resolve it quickly.",
   },
 ];
 
@@ -262,11 +292,6 @@ export default function FAQPage() {
             <CardContent className="flex flex-col sm:flex-row justify-center gap-4">
               <Button size="lg" asChild>
                 <Link href="/contact">Contact Support</Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <a href="mailto:support@trainingsuite.com">
-                  Email Us
-                </a>
               </Button>
             </CardContent>
           </Card>

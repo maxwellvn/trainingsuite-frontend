@@ -111,7 +111,6 @@ export default function HomePage() {
   const { isAuthenticated } = useAuth();
   const { data: coursesResponse, isLoading } = useCourses({
     status: "published",
-    limit: 4,
     sort: "enrollmentCount",
     order: "desc",
   });
@@ -227,7 +226,7 @@ export default function HomePage() {
               ))
             ) : (
               <div className="col-span-full py-32 text-center border border-border bg-muted/10">
-                <p className="text-muted-foreground uppercase tracking-widest text-sm font-medium">Training modules are updating...</p>
+                <p className="text-muted-foreground uppercase tracking-widest text-sm font-medium">No courses available</p>
               </div>
             )}
           </div>
