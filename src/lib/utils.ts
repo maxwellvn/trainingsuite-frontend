@@ -258,7 +258,7 @@ export function normalizeUploadUrl(url: string | undefined | null): string | und
 
 /**
  * Extract video duration from a video URL using HTML5 video element.
- * Works with direct video URLs (mp4, webm, etc.) but NOT YouTube/Vimeo.
+ * Works with direct video URLs and streaming URLs, but NOT YouTube/Vimeo embeds.
  * @param url - The video URL to extract duration from
  * @returns Promise resolving to duration in minutes (rounded), or null if extraction fails
  */
@@ -284,34 +284,18 @@ export function getVideoDuration(url: string): Promise<number | null> {
 
     const video = document.createElement("video");
     video.preload = "metadata";
+    video.crossOrigin = "anonymous"; // Help with CORS
 
     const cleanup = () => {
       video.removeAttribute("src");
       video.load();
     };
 
-    video.onloadedmetadata = () => {
-      const durationInSeconds = video.duration;
-      cleanup();
-      
-      if (isFinite(durationInSeconds) && durationInSeconds > 0) {
-        // Return duration in minutes, rounded to nearest minute
-        resolve(Math.round(durationInSeconds / 60));
-      } else {
-        resolve(null);
-      }
-    };
-
-    video.onerror = () => {
-      cleanup();
-      resolve(null);
-    };
-
-    // Timeout after 10 seconds
+    // Timeout after 15 seconds
     const timeout = setTimeout(() => {
       cleanup();
       resolve(null);
-    }, 10000);
+    }, 15000);
 
     video.onloadedmetadata = () => {
       clearTimeout(timeout);
@@ -319,10 +303,18 @@ export function getVideoDuration(url: string): Promise<number | null> {
       cleanup();
       
       if (isFinite(durationInSeconds) && durationInSeconds > 0) {
-        resolve(Math.round(durationInSeconds / 60));
+        // Return duration in minutes, rounded (minimum 1 minute)
+        const minutes = Math.round(durationInSeconds / 60);
+        resolve(minutes > 0 ? minutes : 1);
       } else {
         resolve(null);
       }
+    };
+
+    video.onerror = () => {
+      clearTimeout(timeout);
+      cleanup();
+      resolve(null);
     };
 
     video.src = fullUrl;
