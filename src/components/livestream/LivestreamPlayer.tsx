@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 // Dynamically import ReactPlayer to avoid SSR issues
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ReactPlayer = dynamic(() => import("react-player"), {
   ssr: false,
   loading: () => (
@@ -14,7 +15,7 @@ const ReactPlayer = dynamic(() => import("react-player"), {
       <Loader2 className="h-8 w-8 animate-spin text-white/50" />
     </div>
   ),
-});
+}) as any;
 
 export type StreamType = 
   | "youtube" 
@@ -98,6 +99,12 @@ export function detectStreamType(url: string): StreamType {
   // Check if it might be an HLS URL without extension (common for CDN URLs)
   if (normalizedUrl.includes("/hls/") || normalizedUrl.includes("/live/")) {
     return "hls";
+  }
+  
+  // For any http/https URL that doesn't match above patterns, treat as direct
+  // This handles PHP scripts, CDN URLs, and other dynamic video endpoints
+  if (normalizedUrl.startsWith("http://") || normalizedUrl.startsWith("https://")) {
+    return "direct";
   }
   
   return "unknown";
@@ -199,7 +206,7 @@ export function LivestreamPlayer({
   }
 
   // Unknown stream type - show external link option
-  if (streamType === "unknown" && !url.startsWith("http")) {
+  if (streamType === "unknown") {
     return (
       <div className={cn("aspect-video bg-slate-900 rounded-lg flex items-center justify-center", className)}>
         <div className="text-center text-white">
@@ -306,7 +313,7 @@ export function LivestreamPlayer({
       )}
       
       <ReactPlayer
-        src={url}
+        url={url}
         width="100%"
         height="100%"
         playing={autoplay}
@@ -315,33 +322,18 @@ export function LivestreamPlayer({
         pip={pip}
         playbackRate={playbackRate}
         light={light}
-        config={getPlayerConfig()}
+        config={{
+          youtube: getPlayerConfig().youtube,
+          vimeo: getPlayerConfig().vimeo,
+        }}
         onReady={handleReady}
         onStart={onStart}
         onPlay={onPlay}
         onPause={onPause}
         onEnded={onEnded}
         onError={handleError}
-        onTimeUpdate={(e: React.SyntheticEvent<HTMLVideoElement>) => {
-          const video = e.currentTarget;
-          if (onProgress && video.duration) {
-            onProgress({
-              played: video.currentTime / video.duration,
-              playedSeconds: video.currentTime,
-              loaded: video.buffered.length > 0 
-                ? video.buffered.end(video.buffered.length - 1) / video.duration 
-                : 0,
-              loadedSeconds: video.buffered.length > 0 
-                ? video.buffered.end(video.buffered.length - 1) 
-                : 0,
-            });
-          }
-        }}
-        onDurationChange={(e: React.SyntheticEvent<HTMLVideoElement>) => {
-          if (onDuration) {
-            onDuration(e.currentTarget.duration);
-          }
-        }}
+        onProgress={onProgress}
+        onDuration={onDuration}
         style={{
           position: "absolute",
           top: 0,

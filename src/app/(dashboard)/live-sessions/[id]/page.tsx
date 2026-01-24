@@ -9,9 +9,7 @@ import {
   Calendar,
   Clock,
   Users,
-  Play,
   ArrowLeft,
-  ExternalLink,
   Share2,
   Bell,
   CheckCircle,
@@ -433,15 +431,7 @@ export default function LiveSessionDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Join/Watch Button */}
-          {session.status === "live" && session.streamUrl && (
-            <Button className="w-full bg-red-600 hover:bg-red-700" size="lg" asChild>
-              <a href={session.streamUrl} target="_blank" rel="noopener noreferrer">
-                <Play className="h-5 w-5 mr-2" />
-                Join Live Stream
-              </a>
-            </Button>
-          )}
+
         </div>
       </div>
     </div>
