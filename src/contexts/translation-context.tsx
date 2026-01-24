@@ -72,7 +72,7 @@ export const SUPPORTED_LANGUAGES = [
   { code: 'lo', name: 'ລາວ', flag: '🇱🇦' },
   { code: 'mn', name: 'Монгол', flag: '🇲🇳' },
   { code: 'ka', name: 'ქართული', flag: '🇬🇪' },
-  { code: 'hy', name: 'Հայերdelays', flag: '🇦🇲' },
+  { code: 'hy', name: 'Հայdelays', flag: '🇦🇲' },
   { code: 'az', name: 'Azərbaycan', flag: '🇦🇿' },
   { code: 'kk', name: 'Қазақ', flag: '🇰🇿' },
   { code: 'uz', name: 'Oʻzbek', flag: '🇺🇿' },
@@ -142,6 +142,7 @@ interface TranslationContextType {
   isTranslating: boolean;
   translateBatch: (texts: string[]) => Promise<void>;
   supportedLanguages: typeof SUPPORTED_LANGUAGES;
+  translationVersion: number;
 }
 
 const TranslationContext = createContext<TranslationContextType | null>(null);
@@ -166,7 +167,7 @@ function loadCache(): void {
 }
 
 // Save cache to localStorage (debounced)
-let saveTimeout: NodeJS.Timeout;
+let saveTimeout: ReturnType<typeof setTimeout>;
 function saveCache(): void {
   if (typeof window === 'undefined') return;
   clearTimeout(saveTimeout);
@@ -210,9 +211,10 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   const [language, setLanguageState] = useState('en');
   const [isTranslating, setIsTranslating] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [translationVersion, setTranslationVersion] = useState(0);
   const pendingTranslations = useRef<Set<string>>(new Set());
   const batchQueue = useRef<string[]>([]);
-  const batchTimeout = useRef<NodeJS.Timeout | null>(null);
+  const batchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Initialize on mount
   useEffect(() => {
@@ -226,6 +228,8 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   const setLanguage = useCallback((lang: string) => {
     if (!SUPPORTED_LANGUAGES.find(l => l.code === lang)) return;
     setLanguageState(lang);
+    // Force re-render with new language
+    setTranslationVersion(v => v + 1);
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY, lang);
     }
@@ -266,6 +270,8 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
             translationCache.set(cacheKey, translated as string);
           });
           saveCache();
+          // Force re-render after translations arrive
+          setTranslationVersion(v => v + 1);
         }
       }
     } catch (error) {
@@ -325,6 +331,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
         isTranslating,
         translateBatch,
         supportedLanguages: SUPPORTED_LANGUAGES,
+        translationVersion,
       }}
     >
       {children}
@@ -344,6 +351,7 @@ export function useTranslation() {
       isTranslating: false,
       translateBatch: async () => {},
       supportedLanguages: SUPPORTED_LANGUAGES,
+      translationVersion: 0,
     };
   }
   return context;
