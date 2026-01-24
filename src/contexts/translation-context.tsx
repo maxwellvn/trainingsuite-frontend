@@ -303,6 +303,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   }, [language, translateBatch]);
 
   // Get translation (sync - returns cached or original)
+  // Note: We intentionally include translationVersion in deps to get fresh cache reads
   const t = useCallback((text: string): string => {
     if (!text || language === 'en') return text;
     
@@ -315,7 +316,8 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
     queueForTranslation(text);
     
     return text; // Return original while translating
-  }, [language, queueForTranslation]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language, queueForTranslation, translationVersion]);
 
   // Don't render until initialized to avoid hydration mismatch
   if (!isInitialized) {
