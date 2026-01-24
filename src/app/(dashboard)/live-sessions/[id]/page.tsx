@@ -210,7 +210,7 @@ export default function LiveSessionDetailPage() {
             url={videoUrl}
             title={session.title}
             isLive={isLive}
-            autoplay={isLive}
+            autoplay={false}
             muted={false}
             controls={true}
             onReady={() => {
