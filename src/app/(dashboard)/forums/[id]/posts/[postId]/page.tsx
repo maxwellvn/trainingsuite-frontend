@@ -197,12 +197,22 @@ export default function PostDetailPage() {
   const post = postData?.data;
   const comments = commentsData?.data || [];
 
-  // Organize comments into threads
-  const rootComments = comments.filter((c) => !c.parent);
-  const childComments = comments.filter((c) => c.parent);
+  // Helper to get parent ID (handles both object and string)
+  const getParentId = (comment: Comment): string | null => {
+    if (!comment.parent) return null;
+    if (typeof comment.parent === 'string') return comment.parent;
+    if (typeof comment.parent === 'object' && comment.parent !== null) {
+      return (comment.parent as any)._id || null;
+    }
+    return null;
+  };
 
-  const getChildComments = (parentId: string) =>
-    childComments.filter((c) => c.parent === parentId);
+  // Organize comments into threads
+  const rootComments = comments.filter((c) => !getParentId(c));
+  const childComments = comments.filter((c) => getParentId(c));
+
+  const getChildComments = (parentId: string): Comment[] =>
+    childComments.filter((c) => getParentId(c) === parentId);
 
   const isLoading = postLoading || commentsLoading;
 

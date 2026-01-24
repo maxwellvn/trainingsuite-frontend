@@ -41,7 +41,7 @@ const sidebarItems = [
   {
     title: "Community",
     items: [
-      { label: "Forums", href: "/forums", icon: MessageSquare },
+      { label: "Community", href: "/forums", icon: MessageSquare },
       { label: "Announcements", href: "/announcements", icon: Megaphone },
       { label: "Notifications", href: "/notifications", icon: Bell },
     ],

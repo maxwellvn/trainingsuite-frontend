@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import {
@@ -60,6 +60,7 @@ export default function CommunityPage() {
   const [sortBy, setSortBy] = useState<SortOption>("recent");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newPost, setNewPost] = useState({ title: "", content: "", forumId: "" });
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
   // Fetch all forums
   const { data: forumsData, isLoading: forumsLoading } = useQuery({
@@ -94,6 +95,58 @@ export default function CommunityPage() {
   });
 
   const allPosts = allPostsData || [];
+
+  // Initialize liked posts from server data
+  useEffect(() => {
+    if (allPosts.length > 0) {
+      const likedIds = new Set<string>();
+      allPosts.forEach((post: any) => {
+        if (post.isLiked) likedIds.add(post._id);
+      });
+      if (likedIds.size > 0) {
+        setLikedPosts(likedIds);
+      }
+    }
+  }, [allPosts]);
+
+  // Like post mutation
+  const likePostMutation = useMutation({
+    mutationFn: async (postId: string) => {
+      const isLiked = likedPosts.has(postId);
+      if (isLiked) {
+        return forumsApi.unlikePost(postId);
+      }
+      return forumsApi.likePost(postId);
+    },
+    onMutate: async (postId) => {
+      // Optimistic update
+      setLikedPosts((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(postId)) {
+          newSet.delete(postId);
+        } else {
+          newSet.add(postId);
+        }
+        return newSet;
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["all-forum-posts"] });
+    },
+    onError: (_, postId) => {
+      // Revert on error
+      setLikedPosts((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(postId)) {
+          newSet.delete(postId);
+        } else {
+          newSet.add(postId);
+        }
+        return newSet;
+      });
+      toast({ title: t("Failed to update like"), variant: "destructive" });
+    },
+  });
 
   // Create post mutation
   const createPostMutation = useMutation({
@@ -142,9 +195,18 @@ export default function CommunityPage() {
 
   const isLoading = forumsLoading || postsLoading;
 
-  const PostCard = ({ post }: { post: ForumPost & { forum?: Forum } }) => {
+  const PostCard = ({ post }: { post: ForumPost }) => {
     const author = post.user as User;
-    const forumInfo = post.forum || forums.find(f => f._id === (post as any).forumId);
+    const postForum = typeof post.forum === 'object' ? post.forum : null;
+    const forumInfo = postForum || forums.find(f => f._id === (post as any).forumId || f._id === post.forum);
+    const isLiked = likedPosts.has(post._id);
+    const likeCount = (post as any).likes || 0;
+    
+    const handleVote = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      likePostMutation.mutate(post._id);
+    };
     
     return (
       <Card className="hover:shadow-md transition-all border-border bg-card">
@@ -152,11 +214,23 @@ export default function CommunityPage() {
           <div className="flex">
             {/* Vote Section */}
             <div className="flex flex-col items-center py-4 px-3 bg-muted/30 border-r border-border">
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10">
-                <ChevronUp className="h-5 w-5" />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className={`h-8 w-8 ${isLiked ? "text-primary" : "text-muted-foreground"} hover:text-primary hover:bg-primary/10`}
+                onClick={handleVote}
+              >
+                <ChevronUp className={`h-5 w-5 ${isLiked ? "fill-primary" : ""}`} />
               </Button>
-              <span className="text-sm font-semibold py-1">{(post as any).likes || 0}</span>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10">
+              <span className={`text-sm font-semibold py-1 ${isLiked ? "text-primary" : ""}`}>
+                {isLiked ? likeCount + 1 : likeCount}
+              </span>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 text-muted-foreground hover:text-muted-foreground/50"
+                disabled
+              >
                 <ChevronDown className="h-5 w-5" />
               </Button>
             </div>
