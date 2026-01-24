@@ -11,6 +11,8 @@ import {
   Play,
   Search,
   Filter,
+  History,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,30 +40,36 @@ import {
 } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 import { liveSessionsApi } from "@/lib/api/live-sessions";
 import { getInitials } from "@/lib/utils";
 import type { LiveSession, LiveSessionStatus } from "@/types";
-import { format, parseISO, isAfter, isBefore, differenceInMinutes } from "date-fns";
+import { format, parseISO, isAfter, isBefore, differenceInMinutes, formatDistanceToNow } from "date-fns";
 
 export default function LiveSessionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("upcoming");
 
-  const { data: sessionsData, isLoading } = useQuery({
-    queryKey: ["live-sessions"],
-    queryFn: () => liveSessionsApi.getAll(1, 100),
+  // Fetch upcoming sessions (scheduled + live)
+  const { data: upcomingData, isLoading: isLoadingUpcoming } = useQuery({
+    queryKey: ["live-sessions", "upcoming"],
+    queryFn: () => liveSessionsApi.getAll(1, 100), // Default returns scheduled + live
   });
 
-  const sessions = sessionsData?.data || [];
+  // Fetch past sessions (ended)
+  const { data: pastData, isLoading: isLoadingPast } = useQuery({
+    queryKey: ["live-sessions", "ended"],
+    queryFn: () => liveSessionsApi.getAll(1, 100, "ended"),
+  });
+
+  const isLoading = isLoadingUpcoming || isLoadingPast;
+
+  const upcomingSessions = upcomingData?.data || [];
+  const pastSessions = pastData?.data || [];
   const now = new Date();
 
-  // Filter sessions by tab
-  const upcomingSessions = sessions.filter(
-    (s) => s.status === "scheduled" || s.status === "live"
-  );
-  const pastSessions = sessions.filter(
-    (s) => s.status === "ended"
-  );
+  // All sessions for the live now banner
+  const allSessions = [...upcomingSessions, ...pastSessions];
 
   const filteredSessions = (activeTab === "upcoming" ? upcomingSessions : pastSessions)
     .filter((s) => s.title.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -115,7 +123,7 @@ export default function LiveSessionsPage() {
       </div>
 
       {/* Live Now Banner */}
-      {sessions.some((s) => s.status === "live") && (
+      {upcomingSessions.some((s) => s.status === "live") && (
         <Card className="bg-gradient-to-r from-red-600 to-red-500 text-white border-0">
           <CardContent className="py-6">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -126,7 +134,7 @@ export default function LiveSessionsPage() {
                 <div>
                   <h3 className="font-semibold text-lg">Sessions are live now!</h3>
                   <p className="text-red-100">
-                    {sessions.filter((s) => s.status === "live").length} session(s) currently streaming
+                    {upcomingSessions.filter((s) => s.status === "live").length} session(s) currently streaming
                   </p>
                 </div>
               </div>
@@ -164,7 +172,7 @@ export default function LiveSessionsPage() {
         </div>
       </div>
 
-      {/* Sessions Grid */}
+      {/* Sessions Content */}
       {isLoading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -181,11 +189,12 @@ export default function LiveSessionsPage() {
                 ? "Try adjusting your search"
                 : activeTab === "upcoming"
                 ? "No upcoming sessions scheduled"
-                : "No past sessions available"}
+                : "No past sessions in your history"}
             </p>
           </CardContent>
         </Card>
-      ) : (
+      ) : activeTab === "upcoming" ? (
+        /* Upcoming Sessions Grid */
         <div id="live-sessions" className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredSessions.map((session) => (
             <Card key={session._id} className="flex flex-col overflow-hidden">
@@ -249,15 +258,17 @@ export default function LiveSessionsPage() {
                     <Calendar className="h-4 w-4" />
                     <span>{getTimeDisplay(session)}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>{session.duration} minutes</span>
-                  </div>
+                  {session.duration && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      <span>{session.duration} minutes</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Users className="h-4 w-4" />
                     <span>
                       {session.attendeeCount || 0}
-                      {session.maxAttendees && ` / ${session.maxAttendees}`} attendees
+                      {session.maxAttendees ? ` / ${session.maxAttendees}` : ""} attendees
                     </span>
                   </div>
                 </div>
@@ -271,28 +282,102 @@ export default function LiveSessionsPage() {
                       Join Live
                     </Link>
                   </Button>
-                ) : session.status === "scheduled" ? (
+                ) : (
                   <Button className="w-full" variant="outline" asChild>
                     <Link href={`/live-sessions/${session._id}`}>
                       View Details
                     </Link>
-                  </Button>
-                ) : session.recordingUrl ? (
-                  <Button className="w-full" asChild>
-                    <Link href={`/live-sessions/${session._id}`}>
-                      <Play className="h-4 w-4 mr-2" />
-                      Watch Recording
-                    </Link>
-                  </Button>
-                ) : (
-                  <Button className="w-full" variant="outline" disabled>
-                    No Recording Available
                   </Button>
                 )}
               </CardFooter>
             </Card>
           ))}
         </div>
+      ) : (
+        /* Past Sessions History List */
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Session History
+            </CardTitle>
+            <CardDescription>
+              A record of past live sessions you attended or were available to you.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="divide-y">
+              {filteredSessions.map((session) => (
+                <div key={session._id} className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors">
+                  {/* Thumbnail */}
+                  <div className="hidden sm:block h-16 w-24 rounded bg-muted flex-shrink-0 overflow-hidden">
+                    {session.thumbnail ? (
+                      <img
+                        src={session.thumbnail}
+                        alt={session.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+                        <Video className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Session Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="font-medium truncate">{session.title}</h4>
+                        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                          <Avatar className="h-5 w-5">
+                            <AvatarImage src={session.instructor?.avatar} />
+                            <AvatarFallback className="text-[10px]">
+                              {getInitials(session.instructor?.name || "?")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span>{session.instructor?.name || "Instructor"}</span>
+                          {session.course && (
+                            <>
+                              <span className="text-muted-foreground/50">•</span>
+                              <span className="truncate">{session.course.title}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="flex-shrink-0">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Ended
+                      </Badge>
+                    </div>
+
+                    {/* Session Stats */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>{format(parseISO(session.scheduledAt), "MMM d, yyyy 'at' h:mm a")}</span>
+                      </div>
+                      {session.duration && (
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{session.duration} min</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        <span>{session.attendeeCount || 0} attended</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-muted-foreground/70">
+                        <History className="h-3 w-3" />
+                        <span>{formatDistanceToNow(parseISO(session.scheduledAt), { addSuffix: true })}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

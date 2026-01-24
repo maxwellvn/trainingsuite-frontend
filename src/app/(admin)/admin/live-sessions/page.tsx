@@ -62,6 +62,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { liveSessionsApi } from "@/lib/api/live-sessions";
 import { coursesApi } from "@/lib/api/courses";
@@ -132,6 +133,9 @@ export default function AdminLiveSessionsPage() {
     streamUrl: "",
     streamProvider: "youtube" as StreamProvider,
     maxAttendees: 100,
+    // Toggle states for optional fields
+    hasDurationLimit: false,
+    hasMaxAttendees: false,
   });
 
   const { data: sessionsData, isLoading } = useQuery({
@@ -151,10 +155,12 @@ export default function AdminLiveSessionsPage() {
       course: data.course || undefined,
       // Convert datetime-local format to ISO string
       scheduledAt: new Date(data.scheduledAt).toISOString(),
-      duration: data.duration,
+      // Only include duration if toggle is enabled
+      duration: data.hasDurationLimit ? data.duration : undefined,
       streamUrl: data.streamUrl || undefined,
       streamProvider: data.streamProvider,
-      maxAttendees: data.maxAttendees,
+      // Only include maxAttendees if toggle is enabled
+      maxAttendees: data.hasMaxAttendees ? data.maxAttendees : undefined,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-live-sessions"] });
@@ -229,6 +235,8 @@ export default function AdminLiveSessionsPage() {
       streamUrl: "",
       streamProvider: "youtube",
       maxAttendees: 100,
+      hasDurationLimit: false,
+      hasMaxAttendees: false,
     });
   };
 
@@ -239,10 +247,12 @@ export default function AdminLiveSessionsPage() {
       description: session.description || "",
       course: session.course?._id || "",
       scheduledAt: format(parseISO(session.scheduledAt), "yyyy-MM-dd'T'HH:mm"),
-      duration: session.duration,
+      duration: session.duration || 60,
       streamUrl: session.streamUrl || "",
       streamProvider: session.streamProvider,
       maxAttendees: session.maxAttendees || 100,
+      hasDurationLimit: !!session.duration,
+      hasMaxAttendees: !!session.maxAttendees,
     });
     setDialogOpen(true);
   };
@@ -257,10 +267,12 @@ export default function AdminLiveSessionsPage() {
           description: formData.description || undefined,
           // Convert datetime-local format to ISO string
           scheduledAt: new Date(formData.scheduledAt).toISOString(),
-          duration: formData.duration,
+          // Only include duration if toggle is enabled
+          duration: formData.hasDurationLimit ? formData.duration : undefined,
           streamUrl: formData.streamUrl || undefined,
           streamProvider: formData.streamProvider,
-          maxAttendees: formData.maxAttendees,
+          // Only include maxAttendees if toggle is enabled
+          maxAttendees: formData.hasMaxAttendees ? formData.maxAttendees : undefined,
         },
       });
     } else {
@@ -463,14 +475,20 @@ export default function AdminLiveSessionsPage() {
                           {format(parseISO(session.scheduledAt), "h:mm a")}
                         </div>
                       </TableCell>
-                      <TableCell className="text-xs font-mono">{session.duration} min</TableCell>
+                      <TableCell className="text-xs font-mono">
+                        {session.duration ? `${session.duration} min` : <span className="text-muted-foreground">—</span>}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1.5 text-xs font-mono">
                           <Users className="h-3.5 w-3.5 text-muted-foreground" />
                           {session.attendeeCount || 0}
-                          {session.maxAttendees && (
+                          {session.maxAttendees ? (
                             <span className="text-muted-foreground/50">
                               /{session.maxAttendees}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground/50">
+                              /∞
                             </span>
                           )}
                         </div>
@@ -598,6 +616,7 @@ export default function AdminLiveSessionsPage() {
                   </SelectContent>
                 </Select>
               </div>
+              {/* Date & Time and Stream Provider */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="scheduledAt" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Date & Time *</Label>
@@ -610,20 +629,6 @@ export default function AdminLiveSessionsPage() {
                     className="rounded-none border-border"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="duration" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Duration (minutes)</Label>
-                  <Input
-                    id="duration"
-                    type="number"
-                    min="15"
-                    max="480"
-                    value={formData.duration}
-                    onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) || 60 })}
-                    className="rounded-none border-border"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="streamProvider" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Stream Provider</Label>
                   <Select
@@ -661,17 +666,65 @@ export default function AdminLiveSessionsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="maxAttendees" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Max Attendees</Label>
-                  <Input
-                    id="maxAttendees"
-                    type="number"
-                    min="1"
-                    value={formData.maxAttendees}
-                    onChange={(e) => setFormData({ ...formData, maxAttendees: parseInt(e.target.value) || 100 })}
-                    className="rounded-none border-border"
+              </div>
+
+              {/* Optional: Duration Limit Toggle */}
+              <div className="space-y-3 p-4 border border-border rounded-none bg-muted/20">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-xs font-bold uppercase tracking-wider">Duration Limit</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Set a fixed duration for the session. If disabled, the session runs until manually ended or the video completes.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.hasDurationLimit}
+                    onCheckedChange={(checked) => setFormData({ ...formData, hasDurationLimit: checked })}
                   />
                 </div>
+                {formData.hasDurationLimit && (
+                  <div className="space-y-2 pt-2">
+                    <Label htmlFor="duration" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Duration (minutes)</Label>
+                    <Input
+                      id="duration"
+                      type="number"
+                      min="15"
+                      max="480"
+                      value={formData.duration}
+                      onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) || 60 })}
+                      className="rounded-none border-border"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Optional: Max Attendees Toggle */}
+              <div className="space-y-3 p-4 border border-border rounded-none bg-muted/20">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-xs font-bold uppercase tracking-wider">Attendee Limit</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Limit the number of people who can join this session. If disabled, unlimited attendees can join.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={formData.hasMaxAttendees}
+                    onCheckedChange={(checked) => setFormData({ ...formData, hasMaxAttendees: checked })}
+                  />
+                </div>
+                {formData.hasMaxAttendees && (
+                  <div className="space-y-2 pt-2">
+                    <Label htmlFor="maxAttendees" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Max Attendees</Label>
+                    <Input
+                      id="maxAttendees"
+                      type="number"
+                      min="1"
+                      value={formData.maxAttendees}
+                      onChange={(e) => setFormData({ ...formData, maxAttendees: parseInt(e.target.value) || 100 })}
+                      className="rounded-none border-border"
+                    />
+                  </div>
+                )}
               </div>
               
               {/* Stream URL with provider-specific guidance */}

@@ -383,19 +383,21 @@ export default function LiveSessionDetailPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="font-medium">{session.duration} minutes</p>
-                  <p className="text-sm text-muted-foreground">Duration</p>
+              {session.duration && (
+                <div className="flex items-center gap-3">
+                  <Clock className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium">{session.duration} minutes</p>
+                    <p className="text-sm text-muted-foreground">Duration</p>
+                  </div>
                 </div>
-              </div>
+              )}
               <div className="flex items-center gap-3">
                 <Users className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="font-medium">
                     {session.attendeeCount || 0}
-                    {session.maxAttendees && ` / ${session.maxAttendees}`}
+                    {session.maxAttendees ? ` / ${session.maxAttendees}` : " (Unlimited)"}
                   </p>
                   <p className="text-sm text-muted-foreground">Attendees</p>
                 </div>

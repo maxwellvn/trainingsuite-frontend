@@ -24,7 +24,7 @@ export const liveSessionsApi = {
     description?: string;
     course?: string;
     scheduledAt: string;
-    duration: number;
+    duration?: number;
     streamUrl?: string;
     streamProvider?: string;
     maxAttendees?: number;
