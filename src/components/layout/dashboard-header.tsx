@@ -123,13 +123,13 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
                     onClick={() => handleNotificationClick(notification)}
                   >
                     <div className="flex items-center gap-2 w-full">
-                      <p className="text-sm font-medium flex-1 line-clamp-1">{notification.title}</p>
+                      <p className="text-sm font-medium flex-1 line-clamp-1"><T>{notification.title}</T></p>
                       {!notification.isRead && (
                         <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground line-clamp-2">
-                      {notification.message}
+                      <T>{notification.message}</T>
                     </p>
                     <p className="text-xs text-muted-foreground/50 mt-1">
                       {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}

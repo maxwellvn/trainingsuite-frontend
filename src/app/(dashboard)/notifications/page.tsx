@@ -76,14 +76,14 @@ function NotificationCard({
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className={`font-heading font-bold uppercase text-sm ${!notification.isRead ? "text-primary" : "text-foreground"}`}>
-                    {t(notification.title)}
+                    <T>{notification.title}</T>
                   </h4>
                   {!notification.isRead && (
                     <Badge className="rounded-none h-4 px-1 text-[10px] font-bold uppercase tracking-wider bg-primary border-0"><T>New</T></Badge>
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-2">
-                  {t(notification.message)}
+                  <T>{notification.message}</T>
                 </p>
                 <div className="flex items-center gap-3 mt-3">
                   <p className="text-xs font-mono text-muted-foreground uppercase tracking-wide">

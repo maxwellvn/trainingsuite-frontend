@@ -58,7 +58,7 @@ function AnnouncementCard({ announcement }: { announcement: Announcement }) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-4 mb-3">
-              <h3 className="font-heading font-bold uppercase text-lg">{announcement.title}</h3>
+              <h3 className="font-heading font-bold uppercase text-lg"><T>{announcement.title}</T></h3>
               <Badge
                 variant="outline"
                 className={`rounded-none border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${announcement.priority === "high" ? "border-red-200 text-red-700 bg-red-50" :
@@ -69,7 +69,7 @@ function AnnouncementCard({ announcement }: { announcement: Announcement }) {
                 {priorityLabels[announcement.priority]}
               </Badge>
             </div>
-            <p className="text-muted-foreground whitespace-pre-wrap text-sm leading-relaxed mb-4">{announcement.content}</p>
+            <p className="text-muted-foreground whitespace-pre-wrap text-sm leading-relaxed mb-4"><T>{announcement.content}</T></p>
             <div className="flex items-center gap-2">
               <div className="h-px bg-border flex-1"></div>
               <p className="text-xs font-mono text-muted-foreground uppercase">
