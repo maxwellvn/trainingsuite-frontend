@@ -32,6 +32,7 @@ import { useNotifications, useMarkAsRead } from "@/hooks";
 import { getInitials } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { LanguageSelector } from "@/components/language-selector";
+import { T, useT } from "@/components/t";
 
 interface DashboardHeaderProps {
   onMenuClick?: () => void;
@@ -43,6 +44,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
   const { data: notificationsResponse } = useNotifications();
   const markAsRead = useMarkAsRead();
   const [searchQuery, setSearchQuery] = useState("");
+  const { t } = useT();
 
   const notifications = notificationsResponse?.data || [];
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -81,7 +83,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search training..."
+            placeholder={t("Search training...")}
             className="w-full pl-9 h-10 rounded-none bg-muted/30 border-transparent focus:bg-background focus:border-primary transition-all"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -106,9 +108,9 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80 rounded-none border-border">
             <DropdownMenuLabel className="flex items-center justify-between p-4 pb-2">
-              <span className="font-heading font-bold">Notifications</span>
+              <span className="font-heading font-bold"><T>Notifications</T></span>
               {unreadCount > 0 && (
-                <span className="text-xs text-muted-foreground">{unreadCount} unread</span>
+                <span className="text-xs text-muted-foreground">{unreadCount} <T>unread</T></span>
               )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -136,7 +138,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
                 ))
               ) : (
                 <div className="p-8 text-center text-sm text-muted-foreground">
-                  No new notifications
+                  <T>No new notifications</T>
                 </div>
               )}
             </div>
@@ -171,31 +173,31 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
               <DropdownMenuItem asChild className="rounded-none cursor-pointer">
                 <Link href="/">
                   <Home className="mr-2 h-4 w-4" />
-                  Home
+                  <T>Home</T>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="rounded-none cursor-pointer">
                 <Link href="/dashboard">
                   <User className="mr-2 h-4 w-4" />
-                  Dashboard
+                  <T>Dashboard</T>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="rounded-none cursor-pointer">
                 <Link href="/my-courses">
                   <BookOpen className="mr-2 h-4 w-4" />
-                  My Courses
+                  <T>My Courses</T>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="rounded-none cursor-pointer">
                 <Link href="/certificates">
                   <Award className="mr-2 h-4 w-4" />
-                  Certificates
+                  <T>Certificates</T>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild className="rounded-none cursor-pointer">
                 <Link href="/settings">
                   <Settings className="mr-2 h-4 w-4" />
-                  Settings
+                  <T>Settings</T>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -205,7 +207,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
                 className="text-destructive focus:text-destructive rounded-none cursor-pointer"
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                {isLoggingOut ? "Signing out..." : "Sign out"}
+                {isLoggingOut ? <T>Signing out...</T> : <T>Sign out</T>}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

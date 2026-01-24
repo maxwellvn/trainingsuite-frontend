@@ -52,15 +52,15 @@ const levelColors = {
 
 function CourseDetailSkeleton() {
   return (
-    <div className="container max-w-6xl py-8">
-      <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <Skeleton className="h-8 w-3/4" />
-          <Skeleton className="h-20 w-full" />
-          <Skeleton className="h-64 w-full" />
+    <div className="container max-w-6xl py-4 sm:py-8 px-4 sm:px-6">
+      <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+          <Skeleton className="h-6 sm:h-8 w-3/4" />
+          <Skeleton className="h-16 sm:h-20 w-full" />
+          <Skeleton className="h-48 sm:h-64 w-full" />
         </div>
-        <div>
-          <Skeleton className="h-96 w-full" />
+        <div className="order-first lg:order-none">
+          <Skeleton className="h-72 sm:h-96 w-full" />
         </div>
       </div>
     </div>
@@ -399,12 +399,12 @@ export default function CourseDetailPage({
 
   if (!course) {
     return (
-      <div className="container max-w-6xl py-16 text-center">
-        <h1 className="text-2xl font-bold"><T>Course not found</T></h1>
-        <p className="text-muted-foreground mt-2">
+      <div className="container max-w-6xl py-12 sm:py-16 px-4 sm:px-6 text-center">
+        <h1 className="text-xl sm:text-2xl font-bold"><T>Course not found</T></h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-2">
           <T>The course you're looking for doesn't exist or has been removed.</T>
         </p>
-        <Button className="mt-6" onClick={() => router.push("/courses")}>
+        <Button className="mt-4 sm:mt-6" onClick={() => router.push("/courses")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           <T>Back to Courses</T>
         </Button>
@@ -458,20 +458,20 @@ export default function CourseDetailPage({
     <div className="min-h-screen">
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white">
-        <div className="container max-w-6xl py-12">
-          <div className="grid lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
+        <div className="container max-w-6xl py-6 sm:py-12 px-4 sm:px-6">
+          <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="lg:col-span-2 order-2 lg:order-1">
               <Button
                 variant="ghost"
                 size="sm"
-                className="mb-4 text-slate-300 hover:text-white hover:bg-white/10"
+                className="mb-3 sm:mb-4 text-slate-300 hover:text-white hover:bg-white/10"
                 onClick={() => router.push("/courses")}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 <T>All Courses</T>
               </Button>
 
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex flex-wrap items-center gap-2 mb-3 sm:mb-4">
                 <Badge className={levelColors[course.level as keyof typeof levelColors] || "bg-gray-100 text-gray-800"}>
                   {t(course.level || "beginner")}
                 </Badge>
@@ -487,15 +487,15 @@ export default function CourseDetailPage({
                 )}
               </div>
 
-              <h1 className="text-3xl font-bold tracking-tight mb-4">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3 sm:mb-4">
                 {t(course.title)}
               </h1>
 
-              <p className="text-slate-300 text-lg leading-relaxed mb-6">
+              <p className="text-slate-300 text-base sm:text-lg leading-relaxed mb-4 sm:mb-6">
                 {t(course.description || "")}
               </p>
 
-              <div className="flex flex-wrap items-center gap-4 text-sm">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm">
                 <div className="flex items-center gap-1 text-amber-400">
                   <Star className="h-4 w-4 fill-current" />
                   <span className="font-semibold">{course.rating?.toFixed(1) || "N/A"}</span>
@@ -522,8 +522,8 @@ export default function CourseDetailPage({
             </div>
 
             {/* Enrollment Card */}
-            <div className="lg:row-span-2">
-              <Card className="sticky top-24 shadow-lg">
+            <div className="lg:row-span-2 order-1 lg:order-2">
+              <Card className="lg:sticky lg:top-24 shadow-lg">
                 {/* Preview Image */}
                 <div className="aspect-video bg-gradient-to-br from-violet-500 to-purple-600 rounded-t-lg relative overflow-hidden">
                   {normalizeUploadUrl(course.thumbnail) && (
@@ -604,27 +604,27 @@ export default function CourseDetailPage({
       </div>
 
       {/* Course Content */}
-      <div className="container max-w-6xl py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="container max-w-6xl py-6 sm:py-8 px-4 sm:px-6">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2">
             <Tabs defaultValue="curriculum" className="w-full">
-              <TabsList className="mb-6 w-full justify-start overflow-x-auto flex-nowrap gap-2">
-                <TabsTrigger value="curriculum" className="shrink-0"><T>Curriculum</T></TabsTrigger>
-                <TabsTrigger value="overview" className="shrink-0"><T>Overview</T></TabsTrigger>
-                <TabsTrigger value="reviews" className="shrink-0"><T>Reviews</T></TabsTrigger>
+              <TabsList className="mb-4 sm:mb-6 w-full justify-start overflow-x-auto flex-nowrap gap-1 sm:gap-2 h-auto p-1">
+                <TabsTrigger value="curriculum" className="shrink-0 text-xs sm:text-sm px-2 sm:px-3"><T>Curriculum</T></TabsTrigger>
+                <TabsTrigger value="overview" className="shrink-0 text-xs sm:text-sm px-2 sm:px-3"><T>Overview</T></TabsTrigger>
+                <TabsTrigger value="reviews" className="shrink-0 text-xs sm:text-sm px-2 sm:px-3"><T>Reviews</T></TabsTrigger>
               </TabsList>
 
               <TabsContent value="curriculum" className="mt-0">
                 <Card>
-                  <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg"><T>Course Content</T></CardTitle>
-                      <p className="text-sm text-muted-foreground">
+                  <CardHeader className="pb-4 px-4 sm:px-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <CardTitle className="text-base sm:text-lg"><T>Course Content</T></CardTitle>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         {modules.length} <T>modules</T> &bull; {totalLessons} <T>lessons</T>{totalDuration > 0 ? ` • ${totalDuration} min` : ""}
                       </p>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0">
+                  <CardContent className="pt-0 px-4 sm:px-6">
                     {curriculumLoading ? (
                       <div className="space-y-3">
                         {[...Array(4)].map((_, i) => (
@@ -653,10 +653,10 @@ export default function CourseDetailPage({
 
               <TabsContent value="overview" className="mt-0">
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg"><T>Course Outcomes</T></CardTitle>
+                  <CardHeader className="px-4 sm:px-6">
+                    <CardTitle className="text-base sm:text-lg"><T>Course Outcomes</T></CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="px-4 sm:px-6">
                     {course.objectives && course.objectives.length > 0 ? (
                       <ul className="grid sm:grid-cols-2 gap-3">
                         {course.objectives.map((outcome: string, index: number) => (
@@ -689,11 +689,11 @@ export default function CourseDetailPage({
 
               <TabsContent value="reviews" className="mt-0">
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg"><T>Student Reviews</T></CardTitle>
+                  <CardHeader className="px-4 sm:px-6">
+                    <CardTitle className="text-base sm:text-lg"><T>Student Reviews</T></CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-[200px,1fr] gap-8">
+                  <CardContent className="px-4 sm:px-6">
+                    <div className="grid grid-cols-1 md:grid-cols-[200px,1fr] gap-6 md:gap-8">
                       {/* Rating Summary */}
                       <div className="text-center">
                         <div className="text-5xl font-bold text-primary">
@@ -844,14 +844,14 @@ function RelatedCourses({
 
   return (
     <div className="border-t bg-muted/30">
-      <div className="container max-w-6xl py-12">
-        <h2 className="text-2xl font-bold mb-6"><T>Related Courses</T></h2>
+      <div className="container max-w-6xl py-8 sm:py-12 px-4 sm:px-6">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6"><T>Related Courses</T></h2>
         {isLoading ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[1, 2, 3, 4].map((i) => (
               <Card key={i} className="overflow-hidden">
                 <Skeleton className="aspect-video" />
-                <CardContent className="p-4 space-y-2">
+                <CardContent className="p-3 sm:p-4 space-y-2">
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-3 w-1/2" />
                   <Skeleton className="h-4 w-1/4" />
@@ -860,7 +860,7 @@ function RelatedCourses({
             ))}
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {relatedCourses.map((course: Course) => (
               <Link key={course._id} href={`/courses/${course.slug}`}>
                 <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
@@ -877,9 +877,9 @@ function RelatedCourses({
                       </div>
                     )}
                   </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold line-clamp-2 mb-2">{t(course.title)}</h3>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                  <CardContent className="p-3 sm:p-4">
+                    <h3 className="font-semibold line-clamp-2 mb-2 text-sm sm:text-base">{t(course.title)}</h3>
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mb-2">
                       <div className="flex items-center gap-1">
                         <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
                         <span>{course.rating?.toFixed(1) || "N/A"}</span>

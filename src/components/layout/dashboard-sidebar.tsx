@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "./logo";
 import { useAuth } from "@/hooks/use-auth";
+import { useT } from "@/components/t";
 
 const sidebarItems = [
   {
@@ -62,6 +63,7 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ collapsed = false, onCollapse }: DashboardSidebarProps) {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { t } = useT();
 
   return (
     <aside
@@ -101,7 +103,7 @@ export function DashboardSidebar({ collapsed = false, onCollapse }: DashboardSid
               <div key={section.title}>
                 {!collapsed && (
                   <p className="mb-4 px-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                    {section.title}
+                    {t(section.title)}
                   </p>
                 )}
                 <ul className="space-y-1">
@@ -120,10 +122,10 @@ export function DashboardSidebar({ collapsed = false, onCollapse }: DashboardSid
                               : "text-muted-foreground hover:text-foreground",
                             collapsed && "justify-center px-2 border-l-0"
                           )}
-                          title={collapsed ? item.label : undefined}
+                          title={collapsed ? t(item.label) : undefined}
                         >
                           <Icon className={cn("h-4 w-4 shrink-0", isActive && "text-primary")} />
-                          {!collapsed && <span>{item.label}</span>}
+                          {!collapsed && <span>{t(item.label)}</span>}
                         </Link>
                       </li>
                     );

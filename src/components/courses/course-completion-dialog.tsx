@@ -16,6 +16,7 @@ import { Confetti } from "@/components/ui/confetti";
 import { useToast } from "@/hooks/use-toast";
 import { certificatesApi } from "@/lib/api/certificates";
 import type { Course, Certificate, CertificateWithDetails } from "@/types";
+import { T, useT } from "@/components/t";
 
 interface CourseCompletionDialogProps {
   open: boolean;
@@ -31,6 +32,7 @@ export function CourseCompletionDialog({
   onCertificateGenerated,
 }: CourseCompletionDialogProps) {
   const { toast } = useToast();
+  const { t } = useT();
   const queryClient = useQueryClient();
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -82,7 +84,7 @@ export function CourseCompletionDialog({
     } else {
       // Fallback: copy to clipboard
       await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-      toast({ title: "Link copied to clipboard!" });
+      toast({ title: t("Link copied to clipboard!") });
     }
   };
 
@@ -107,11 +109,11 @@ export function CourseCompletionDialog({
             <div>
               <DialogTitle className="text-2xl flex items-center justify-center gap-2">
                 <PartyPopper className="h-6 w-6 text-amber-500" />
-                Congratulations!
+                <T>Congratulations!</T>
                 <PartyPopper className="h-6 w-6 text-amber-500 scale-x-[-1]" />
               </DialogTitle>
               <DialogDescription className="mt-2 text-base">
-                You&apos;ve successfully completed
+                <T>You&apos;ve successfully completed</T>
               </DialogDescription>
               <p className="font-semibold text-foreground mt-1">
                 {course?.title}
@@ -123,13 +125,13 @@ export function CourseCompletionDialog({
             {isLoadingCertificates ? (
               <Button size="lg" className="w-full" disabled>
                 <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                Loading Certificate...
+                <T>Loading Certificate...</T>
               </Button>
             ) : certificate ? (
               <div className="space-y-3">
                 <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg border border-green-200 dark:border-green-900">
                   <p className="text-sm text-green-700 dark:text-green-400 font-medium">
-                    Certificate Ready!
+                    <T>Certificate Ready!</T>
                   </p>
                   <p className="text-xs text-green-600 dark:text-green-500 mt-1">
                     ID: {certificate.certificateNumber || certificate._id}
@@ -138,23 +140,23 @@ export function CourseCompletionDialog({
                 <Button size="lg" className="w-full" asChild>
                   <Link href={`/certificates/${certificate._id}`}>
                     <Award className="h-5 w-5 mr-2" />
-                    View Certificate
+                    <T>View Certificate</T>
                   </Link>
                 </Button>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" className="flex-1" onClick={handleShare}>
                     <Share2 className="h-4 w-4 mr-1" />
-                    Share
+                    <T>Share</T>
                   </Button>
                 </div>
               </div>
             ) : (
               <div className="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-900">
                 <p className="text-sm text-amber-700 dark:text-amber-400 font-medium">
-                  Certificate is being generated...
+                  <T>Certificate is being generated...</T>
                 </p>
                 <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
-                  Please check your certificates page in a moment.
+                  <T>Please check your certificates page in a moment.</T>
                 </p>
               </div>
             )}
@@ -162,7 +164,7 @@ export function CourseCompletionDialog({
             <div className="pt-4 border-t">
               <Button variant="ghost" size="sm" asChild className="w-full">
                 <Link href="/courses">
-                  Continue Learning
+                  <T>Continue Learning</T>
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>
               </Button>

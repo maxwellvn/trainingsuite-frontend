@@ -274,12 +274,12 @@ export default function DashboardPage() {
 
         {/* Notifications / Activity */}
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-heading font-bold uppercase tracking-wide flex items-center gap-2">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-lg sm:text-xl font-heading font-bold uppercase tracking-wide flex items-center gap-2 shrink-0">
               <Bell className="h-5 w-5" />
               <T>Notifications</T>
             </h2>
-            <Button variant="ghost" size="sm" asChild className="hover:bg-transparent hover:text-primary uppercase text-xs font-bold tracking-wider p-0 h-auto">
+            <Button variant="ghost" size="sm" asChild className="hover:bg-transparent hover:text-primary uppercase text-xs font-bold tracking-wider p-0 h-auto shrink-0">
               <Link href="/notifications">
                 <T>View All</T>
               </Link>

@@ -25,6 +25,7 @@ import { useAuth } from "@/hooks";
 import { useToast } from "@/hooks/use-toast";
 import { apiClient } from "@/lib/api/client";
 import { getInitials } from "@/lib/utils";
+import { T, useT } from "@/components/t";
 
 interface Comment {
     _id: string;
@@ -45,6 +46,7 @@ interface LessonCommentsProps {
 export function LessonComments({ lessonId }: LessonCommentsProps) {
     const { user, isAuthenticated } = useAuth();
     const { toast } = useToast();
+    const { t } = useT();
     const queryClient = useQueryClient();
     const [newComment, setNewComment] = useState("");
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -81,10 +83,10 @@ export function LessonComments({ lessonId }: LessonCommentsProps) {
             setNewComment("");
             setReplyContent("");
             setReplyingTo(null);
-            toast({ title: "Comment added!" });
+            toast({ title: t("Comment added!") });
         },
         onError: () => {
-            toast({ title: "Failed to add comment", variant: "destructive" });
+            toast({ title: t("Failed to add comment"), variant: "destructive" });
         },
     });
 
@@ -96,10 +98,10 @@ export function LessonComments({ lessonId }: LessonCommentsProps) {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["lesson-comments", lessonId] });
-            toast({ title: "Comment deleted" });
+            toast({ title: t("Comment deleted") });
         },
         onError: () => {
-            toast({ title: "Failed to delete comment", variant: "destructive" });
+            toast({ title: t("Failed to delete comment"), variant: "destructive" });
         },
     });
 
@@ -113,10 +115,10 @@ export function LessonComments({ lessonId }: LessonCommentsProps) {
             queryClient.invalidateQueries({ queryKey: ["lesson-comments", lessonId] });
             setEditingId(null);
             setEditContent("");
-            toast({ title: "Comment updated!" });
+            toast({ title: t("Comment updated!") });
         },
         onError: () => {
-            toast({ title: "Failed to update comment", variant: "destructive" });
+            toast({ title: t("Failed to update comment"), variant: "destructive" });
         },
     });
 
@@ -144,10 +146,10 @@ export function LessonComments({ lessonId }: LessonCommentsProps) {
         const diffHours = Math.floor(diffMs / 3600000);
         const diffDays = Math.floor(diffMs / 86400000);
 
-        if (diffMins < 1) return "Just now";
-        if (diffMins < 60) return `${diffMins}m ago`;
-        if (diffHours < 24) return `${diffHours}h ago`;
-        if (diffDays < 7) return `${diffDays}d ago`;
+        if (diffMins < 1) return t("Just now");
+        if (diffMins < 60) return `${diffMins}${t("m ago")}`;
+        if (diffHours < 24) return `${diffHours}${t("h ago")}`;
+        if (diffDays < 7) return `${diffDays}${t("d ago")}`;
         return d.toLocaleDateString();
     };
 
@@ -176,24 +178,24 @@ export function LessonComments({ lessonId }: LessonCommentsProps) {
                                         <MoreVertical className="h-3 w-3" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem
-                                        onClick={() => {
-                                            setEditingId(comment._id);
-                                            setEditContent(comment.content);
-                                        }}
-                                    >
-                                        <Edit2 className="h-4 w-4 mr-2" />
-                                        Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        className="text-destructive"
-                                        onClick={() => deleteMutation.mutate(comment._id)}
-                                    >
-                                        <Trash2 className="h-4 w-4 mr-2" />
-                                        Delete
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem
+                                            onClick={() => {
+                                                setEditingId(comment._id);
+                                                setEditContent(comment.content);
+                                            }}
+                                        >
+                                            <Edit2 className="h-4 w-4 mr-2" />
+                                            <T>Edit</T>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            className="text-destructive"
+                                            onClick={() => deleteMutation.mutate(comment._id)}
+                                        >
+                                            <Trash2 className="h-4 w-4 mr-2" />
+                                            <T>Delete</T>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
                             </DropdownMenu>
                         )}
                     </div>
@@ -206,28 +208,28 @@ export function LessonComments({ lessonId }: LessonCommentsProps) {
                                 rows={2}
                                 className="text-sm"
                             />
-                            <div className="flex gap-2">
-                                <Button
-                                    size="sm"
-                                    onClick={() => handleEdit(comment._id)}
-                                    disabled={editMutation.isPending}
-                                >
-                                    {editMutation.isPending && (
-                                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                                    )}
-                                    Save
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                        setEditingId(null);
-                                        setEditContent("");
-                                    }}
-                                >
-                                    Cancel
-                                </Button>
-                            </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        size="sm"
+                                        onClick={() => handleEdit(comment._id)}
+                                        disabled={editMutation.isPending}
+                                    >
+                                        {editMutation.isPending && (
+                                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                        )}
+                                        <T>Save</T>
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                            setEditingId(null);
+                                            setEditContent("");
+                                        }}
+                                    >
+                                        <T>Cancel</T>
+                                    </Button>
+                                </div>
                         </div>
                     ) : (
                         <>
@@ -243,7 +245,7 @@ export function LessonComments({ lessonId }: LessonCommentsProps) {
                                     }}
                                 >
                                     <Reply className="h-3 w-3 mr-1" />
-                                    Reply
+                                    <T>Reply</T>
                                 </Button>
                             )}
                         </>
@@ -253,7 +255,7 @@ export function LessonComments({ lessonId }: LessonCommentsProps) {
                     {replyingTo === comment._id && (
                         <div className="mt-3 flex gap-2">
                             <Textarea
-                                placeholder="Write a reply..."
+                                placeholder={t("Write a reply...")}
                                 value={replyContent}
                                 onChange={(e) => setReplyContent(e.target.value)}
                                 rows={2}
@@ -276,7 +278,7 @@ export function LessonComments({ lessonId }: LessonCommentsProps) {
                                     variant="outline"
                                     onClick={() => setReplyingTo(null)}
                                 >
-                                    Cancel
+                                    <T>Cancel</T>
                                 </Button>
                             </div>
                         </div>
@@ -324,7 +326,7 @@ export function LessonComments({ lessonId }: LessonCommentsProps) {
                             </AvatarFallback>
                         </Avatar>
                         <Textarea
-                            placeholder="Ask a question or share your thoughts..."
+                            placeholder={t("Ask a question or share your thoughts...")}
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
                             rows={3}
@@ -338,17 +340,17 @@ export function LessonComments({ lessonId }: LessonCommentsProps) {
                             {createMutation.isPending && (
                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                             )}
-                            Post Comment
+                            <T>Post Comment</T>
                         </Button>
                     </div>
                 </form>
             ) : (
                 <div className="text-center py-4 bg-muted/50 rounded-lg">
                     <p className="text-sm text-muted-foreground mb-2">
-                        Sign in to join the discussion
+                        <T>Sign in to join the discussion</T>
                     </p>
                     <Button variant="outline" size="sm" asChild>
-                        <a href="/login">Sign In</a>
+                        <a href="/login"><T>Sign In</T></a>
                     </Button>
                 </div>
             )}
@@ -357,14 +359,14 @@ export function LessonComments({ lessonId }: LessonCommentsProps) {
             <div className="space-y-6">
                 <h3 className="font-semibold flex items-center gap-2">
                     <MessageSquare className="h-4 w-4" />
-                    Comments ({comments.length})
+                    <T>Comments</T> ({comments.length})
                 </h3>
 
                 {comments.length === 0 ? (
                     <div className="text-center py-8">
                         <MessageSquare className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                         <p className="text-muted-foreground">
-                            No comments yet. Be the first to start the discussion!
+                            <T>No comments yet. Be the first to start the discussion!</T>
                         </p>
                     </div>
                 ) : (

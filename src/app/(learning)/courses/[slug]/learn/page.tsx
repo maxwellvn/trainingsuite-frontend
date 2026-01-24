@@ -841,13 +841,13 @@ export default function CourseLearnPage({
               onClick={() => prevLesson && setCurrentLesson(prevLesson)}
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
-              Previous
+              <T>Previous</T>
             </Button>
 
             {completedLessonIds.has(activeLesson?._id || "") && (
               <div className="flex items-center text-sm text-green-600">
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Completed
+                <T>Completed</T>
               </div>
             )}
 
@@ -857,7 +857,7 @@ export default function CourseLearnPage({
               disabled={!nextLesson}
               onClick={() => nextLesson && setCurrentLesson(nextLesson)}
             >
-              Next
+              <T>Next</T>
               <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
@@ -867,15 +867,15 @@ export default function CourseLearnPage({
             <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-12 px-4 overflow-x-auto flex-nowrap gap-2">
               <TabsTrigger value="content" className="shrink-0 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
                 <BookOpen className="h-4 w-4 mr-2" />
-                Content
+                <T>Content</T>
               </TabsTrigger>
               <TabsTrigger value="discussion" className="shrink-0 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
                 <MessageSquare className="h-4 w-4 mr-2" />
-                Discussion
+                <T>Discussion</T>
               </TabsTrigger>
               <TabsTrigger value="notes" className="shrink-0 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">
                 <FileText className="h-4 w-4 mr-2" />
-                Notes
+                <T>Notes</T>
               </TabsTrigger>
             </TabsList>
 
@@ -892,11 +892,11 @@ export default function CourseLearnPage({
             <TabsContent value="notes" className="mt-0 p-6">
               <div className="text-center py-12">
                 <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="font-semibold">Your Notes</h3>
+                <h3 className="font-semibold"><T>Your Notes</T></h3>
                 <p className="text-muted-foreground mt-2">
-                  Take notes while watching the lesson.
+                  <T>Take notes while watching the lesson.</T>
                 </p>
-                <Button className="mt-4">Add Note</Button>
+                <Button className="mt-4"><T>Add Note</T></Button>
               </div>
             </TabsContent>
           </Tabs>
