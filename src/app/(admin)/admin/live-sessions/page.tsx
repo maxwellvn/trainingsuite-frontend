@@ -612,7 +612,7 @@ export default function AdminLiveSessionsPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-lg rounded-none border-border">
+        <DialogContent className="w-[95vw] max-w-lg rounded-none border-border max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-heading uppercase tracking-wide">
               {selectedSession ? "Edit Session" : "Schedule Live Session"}
@@ -726,7 +726,7 @@ export default function AdminLiveSessionsPage() {
                 </Select>
               </div>
               {/* Date & Time and Stream Provider */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="scheduledAt" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Date & Time *</Label>
                   <Input
@@ -778,12 +778,12 @@ export default function AdminLiveSessionsPage() {
               </div>
 
               {/* Optional: Duration Limit Toggle */}
-              <div className="space-y-3 p-4 border border-border rounded-none bg-muted/20">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
+              <div className="space-y-3 p-3 sm:p-4 border border-border rounded-none bg-muted/20">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+                  <div className="space-y-0.5 flex-1">
                     <Label className="text-xs font-bold uppercase tracking-wider">Duration Limit</Label>
                     <p className="text-xs text-muted-foreground">
-                      Set a fixed duration for the session. If disabled, the session runs until manually ended or the video completes.
+                      Set a fixed duration for the session. If disabled, the session runs until manually ended.
                     </p>
                   </div>
                   <Switch
@@ -808,12 +808,12 @@ export default function AdminLiveSessionsPage() {
               </div>
 
               {/* Optional: Max Attendees Toggle */}
-              <div className="space-y-3 p-4 border border-border rounded-none bg-muted/20">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
+              <div className="space-y-3 p-3 sm:p-4 border border-border rounded-none bg-muted/20">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+                  <div className="space-y-0.5 flex-1">
                     <Label className="text-xs font-bold uppercase tracking-wider">Attendee Limit</Label>
                     <p className="text-xs text-muted-foreground">
-                      Limit the number of people who can join this session. If disabled, unlimited attendees can join.
+                      Limit the number of people who can join. If disabled, unlimited attendees can join.
                     </p>
                   </div>
                   <Switch
@@ -866,14 +866,14 @@ export default function AdminLiveSessionsPage() {
                 )}
               </div>
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} className="rounded-none border-border">
+            <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} className="rounded-none border-border w-full sm:w-auto">
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={createMutation.isPending || updateMutation.isPending || isUploadingThumbnail}
-                className="rounded-none"
+                className="rounded-none w-full sm:w-auto"
               >
                 {isUploadingThumbnail
                   ? "Uploading..."
@@ -890,7 +890,7 @@ export default function AdminLiveSessionsPage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="rounded-none border-border">
+        <DialogContent className="w-[95vw] max-w-md rounded-none border-border">
           <DialogHeader>
             <DialogTitle className="font-heading uppercase tracking-wide">Delete Session</DialogTitle>
             <DialogDescription>
@@ -898,12 +898,12 @@ export default function AdminLiveSessionsPage() {
               <br />This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} className="rounded-none border-border">
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} className="rounded-none border-border w-full sm:w-auto">
               Cancel
             </Button>
             <Button
-              className="bg-destructive hover:bg-destructive/90 rounded-none text-destructive-foreground"
+              className="bg-destructive hover:bg-destructive/90 rounded-none text-destructive-foreground w-full sm:w-auto"
               onClick={() => {
                 if (selectedSession) {
                   deleteMutation.mutate(selectedSession._id);
