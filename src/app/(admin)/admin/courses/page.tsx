@@ -452,7 +452,7 @@ export default function CoursesPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1.5">
-                            <span className="font-mono text-sm">{course.averageRating?.toFixed(1) || "N/A"}</span>
+                            <span className="font-mono text-sm">{course.rating?.toFixed(1) || "N/A"}</span>
                             <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
                           </div>
                         </TableCell>

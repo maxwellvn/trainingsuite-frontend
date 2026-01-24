@@ -28,6 +28,7 @@ export const liveSessionsApi = {
     streamUrl?: string;
     streamProvider?: string;
     maxAttendees?: number;
+    thumbnail?: string;
   }) => {
     const response = await apiClient.post<ApiResponse<LiveSession>>(
       "/live-sessions",

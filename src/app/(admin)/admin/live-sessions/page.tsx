@@ -17,6 +17,9 @@ import {
   ExternalLink,
   Radio,
   Info,
+  ImageIcon,
+  Upload,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,6 +69,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { liveSessionsApi } from "@/lib/api/live-sessions";
 import { coursesApi } from "@/lib/api/courses";
+import { uploadApi } from "@/lib/api/upload";
 import { detectStreamType } from "@/components/livestream";
 import type { LiveSession, LiveSessionStatus, StreamProvider } from "@/types";
 import { format, parseISO } from "date-fns";
@@ -133,10 +137,14 @@ export default function AdminLiveSessionsPage() {
     streamUrl: "",
     streamProvider: "youtube" as StreamProvider,
     maxAttendees: 100,
+    thumbnail: "",
     // Toggle states for optional fields
     hasDurationLimit: false,
     hasMaxAttendees: false,
   });
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
+  const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
 
   const { data: sessionsData, isLoading } = useQuery({
     queryKey: ["admin-live-sessions", statusFilter],
@@ -149,7 +157,7 @@ export default function AdminLiveSessionsPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: typeof formData) => liveSessionsApi.create({
+    mutationFn: (data: typeof formData & { thumbnail?: string }) => liveSessionsApi.create({
       title: data.title,
       description: data.description || undefined,
       course: data.course || undefined,
@@ -161,6 +169,7 @@ export default function AdminLiveSessionsPage() {
       streamProvider: data.streamProvider,
       // Only include maxAttendees if toggle is enabled
       maxAttendees: data.hasMaxAttendees ? data.maxAttendees : undefined,
+      thumbnail: data.thumbnail || undefined,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-live-sessions"] });
@@ -235,9 +244,28 @@ export default function AdminLiveSessionsPage() {
       streamUrl: "",
       streamProvider: "youtube",
       maxAttendees: 100,
+      thumbnail: "",
       hasDurationLimit: false,
       hasMaxAttendees: false,
     });
+    setThumbnailFile(null);
+    setThumbnailPreview("");
+  };
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ title: "File size must be less than 5MB", variant: "destructive" });
+        return;
+      }
+      if (!file.type.startsWith("image/")) {
+        toast({ title: "Please select an image file", variant: "destructive" });
+        return;
+      }
+      setThumbnailFile(file);
+      setThumbnailPreview(URL.createObjectURL(file));
+    }
   };
 
   const handleEdit = (session: LiveSession) => {
@@ -251,14 +279,34 @@ export default function AdminLiveSessionsPage() {
       streamUrl: session.streamUrl || "",
       streamProvider: session.streamProvider,
       maxAttendees: session.maxAttendees || 100,
+      thumbnail: session.thumbnail || "",
       hasDurationLimit: !!session.duration,
       hasMaxAttendees: !!session.maxAttendees,
     });
+    setThumbnailFile(null);
+    setThumbnailPreview(session.thumbnail || "");
     setDialogOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    let thumbnailUrl = formData.thumbnail;
+
+    // Upload thumbnail if a file was selected
+    if (thumbnailFile) {
+      try {
+        setIsUploadingThumbnail(true);
+        const uploadResponse = await uploadApi.uploadThumbnail(thumbnailFile);
+        thumbnailUrl = uploadResponse.data?.fileUrl || "";
+      } catch {
+        toast({ title: "Failed to upload thumbnail", variant: "destructive" });
+        setIsUploadingThumbnail(false);
+        return;
+      }
+      setIsUploadingThumbnail(false);
+    }
+
     if (selectedSession) {
       updateMutation.mutate({
         id: selectedSession._id,
@@ -273,10 +321,11 @@ export default function AdminLiveSessionsPage() {
           streamProvider: formData.streamProvider,
           // Only include maxAttendees if toggle is enabled
           maxAttendees: formData.hasMaxAttendees ? formData.maxAttendees : undefined,
+          thumbnail: thumbnailUrl || undefined,
         },
       });
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate({ ...formData, thumbnail: thumbnailUrl });
     }
   };
 
@@ -598,6 +647,66 @@ export default function AdminLiveSessionsPage() {
                   className="rounded-none border-border resize-none"
                 />
               </div>
+              
+              {/* Thumbnail Upload */}
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Thumbnail</Label>
+                <div className="space-y-3">
+                  {thumbnailPreview ? (
+                    <div className="relative">
+                      <img
+                        src={thumbnailPreview}
+                        alt="Thumbnail preview"
+                        className="w-full aspect-video object-cover border border-border"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2 h-7 w-7 rounded-none"
+                        onClick={() => {
+                          setThumbnailFile(null);
+                          setThumbnailPreview("");
+                          setFormData({ ...formData, thumbnail: "" });
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="session-thumbnail-upload"
+                      className="flex flex-col items-center justify-center aspect-video border-2 border-dashed border-border cursor-pointer hover:bg-muted/50 transition-colors"
+                    >
+                      <ImageIcon className="h-10 w-10 text-muted-foreground mb-2" />
+                      <span className="text-sm text-muted-foreground">Click to upload</span>
+                      <span className="text-xs text-muted-foreground mt-1">PNG, JPG up to 5MB</span>
+                    </label>
+                  )}
+                  <input
+                    id="session-thumbnail-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleThumbnailChange}
+                  />
+                  {!thumbnailPreview && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full rounded-none border-border"
+                      onClick={() => document.getElementById("session-thumbnail-upload")?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload Thumbnail
+                    </Button>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Recommended: 1280x720px (16:9 ratio)
+                  </p>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="course" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Related Course (Optional)</Label>
                 <Select
@@ -763,14 +872,16 @@ export default function AdminLiveSessionsPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={createMutation.isPending || updateMutation.isPending}
+                disabled={createMutation.isPending || updateMutation.isPending || isUploadingThumbnail}
                 className="rounded-none"
               >
-                {createMutation.isPending || updateMutation.isPending
-                  ? "Saving..."
-                  : selectedSession
-                    ? "Update"
-                    : "Schedule"}
+                {isUploadingThumbnail
+                  ? "Uploading..."
+                  : createMutation.isPending || updateMutation.isPending
+                    ? "Saving..."
+                    : selectedSession
+                      ? "Update"
+                      : "Schedule"}
               </Button>
             </DialogFooter>
           </form>

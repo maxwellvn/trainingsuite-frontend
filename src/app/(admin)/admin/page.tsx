@@ -325,7 +325,7 @@ export default function AdminDashboardPage() {
                         <Badge variant="outline" className="rounded-none font-normal text-muted-foreground">{course.level || "All Levels"}</Badge>
                       </TableCell>
                       <TableCell className="text-right font-mono">
-                        {course.averageRating?.toFixed(1) || "N/A"}
+                        {course.rating?.toFixed(1) || "N/A"}
                       </TableCell>
                       <TableCell className="pr-6">
                         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-none hover:bg-primary hover:text-primary-foreground" asChild>

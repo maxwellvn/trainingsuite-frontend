@@ -47,8 +47,13 @@ export default function LiveSessionDetailPage() {
   const { data: sessionData, isLoading, refetch } = useQuery({
     queryKey: ["live-session", sessionId],
     queryFn: () => liveSessionsApi.getById(sessionId),
-    // Refetch every 10 seconds if session is scheduled and time is close
-    refetchInterval: shouldRefresh ? 10000 : false,
+    // Refetch every 10 seconds if session is live (for attendee count) or scheduled and time is close
+    refetchInterval: (query) => {
+      const session = query.state.data?.data;
+      if (session?.status === "live") return 10000; // Poll every 10s when live
+      if (shouldRefresh) return 10000; // Poll when close to start time
+      return false;
+    },
   });
 
   const joinMutation = useMutation({
