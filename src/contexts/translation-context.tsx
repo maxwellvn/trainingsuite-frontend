@@ -212,7 +212,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   const [isInitialized, setIsInitialized] = useState(false);
   const pendingTranslations = useRef<Set<string>>(new Set());
   const batchQueue = useRef<string[]>([]);
-  const batchTimeout = useRef<NodeJS.Timeout>();
+  const batchTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize on mount
   useEffect(() => {
@@ -286,7 +286,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
     batchQueue.current.push(text);
     
     // Debounce batch requests
-    clearTimeout(batchTimeout.current);
+    if (batchTimeout.current) clearTimeout(batchTimeout.current);
     batchTimeout.current = setTimeout(() => {
       const batch = [...new Set(batchQueue.current)];
       batchQueue.current = [];
