@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Play,
   Clock,
   Users,
   Star,
@@ -529,11 +528,6 @@ export default function CourseDetailPage({
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                   )}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="h-16 w-16 rounded-full bg-white/20 backdrop-blur flex items-center justify-center cursor-pointer hover:bg-white/30 transition-colors">
-                      <Play className="h-8 w-8 text-white fill-white ml-1" />
-                    </div>
-                  </div>
                 </div>
                 <CardContent className="p-6">
                   {isEnrolled ? (
@@ -557,7 +551,6 @@ export default function CourseDetailPage({
                       </div>
 
                       <Button size="lg" className={`w-full ${isCompleted ? "bg-green-600 hover:bg-green-700" : ""}`} onClick={handleGoToLearning}>
-                        <Play className="h-4 w-4 mr-2" />
                         {isCompleted ? "Review Course" : "Continue Learning"}
                       </Button>
                     </div>
