@@ -101,40 +101,42 @@ export default function CommunityPage() {
       allPosts.forEach((post: any) => {
         if (post.isLiked) likedIds.add(post._id);
       });
-      if (likedIds.size > 0) {
-        setLikedPosts(likedIds);
-      }
+      setLikedPosts(likedIds);
     }
   }, [allPosts]);
 
-  // Like post mutation - always use POST, backend handles toggle
+  // Like/unlike post mutation - uses correct method based on current state
   const likePostMutation = useMutation({
-    mutationFn: async (postId: string) => {
+    mutationFn: async ({ postId, isCurrentlyLiked }: { postId: string; isCurrentlyLiked: boolean }) => {
+      if (isCurrentlyLiked) {
+        return forumsApi.unlikePost(postId);
+      }
       return forumsApi.likePost(postId);
     },
-    onMutate: async (postId) => {
+    onMutate: async ({ postId, isCurrentlyLiked }) => {
       // Optimistic update
       setLikedPosts((prev) => {
         const newSet = new Set(prev);
-        if (newSet.has(postId)) {
+        if (isCurrentlyLiked) {
           newSet.delete(postId);
         } else {
           newSet.add(postId);
         }
         return newSet;
       });
+      return { postId, isCurrentlyLiked };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["all-forum-posts"] });
     },
-    onError: (_, postId) => {
+    onError: (_, { postId, isCurrentlyLiked }) => {
       // Revert on error
       setLikedPosts((prev) => {
         const newSet = new Set(prev);
-        if (newSet.has(postId)) {
-          newSet.delete(postId);
+        if (isCurrentlyLiked) {
+          newSet.add(postId); // Was liked, failed to unlike, restore
         } else {
-          newSet.add(postId);
+          newSet.delete(postId); // Was not liked, failed to like, remove
         }
         return newSet;
       });
@@ -200,7 +202,7 @@ export default function CommunityPage() {
     const handleVote = (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      likePostMutation.mutate(post._id);
+      likePostMutation.mutate({ postId: post._id, isCurrentlyLiked: isLiked });
     };
     
     return (

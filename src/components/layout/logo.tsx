@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -6,11 +5,24 @@ interface LogoProps {
   className?: string;
   iconOnly?: boolean;
   variant?: "default" | "light";
+  reload?: boolean;
 }
 
-export function Logo({ className, iconOnly = false, variant = "default" }: LogoProps) {
+export function Logo({ className, iconOnly = false, variant = "default", reload = false }: LogoProps) {
+  const handleClick = (e: React.MouseEvent) => {
+    if (reload) {
+      // Full page reload
+      window.location.href = "/";
+      e.preventDefault();
+    }
+  };
+
   return (
-    <Link href="/" className={cn("flex items-center gap-3", className)}>
+    <a 
+      href="/" 
+      onClick={handleClick}
+      className={cn("flex items-center gap-3", className)}
+    >
       <Image
         src="/logo.webp"
         alt="Rhapsody Global Missionaries"
@@ -33,6 +45,6 @@ export function Logo({ className, iconOnly = false, variant = "default" }: LogoP
           </span>
         </div>
       )}
-    </Link>
+    </a>
   );
 }

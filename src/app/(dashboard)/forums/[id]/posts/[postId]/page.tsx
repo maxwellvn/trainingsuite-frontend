@@ -105,34 +105,38 @@ export default function PostDetailPage() {
     },
   });
 
-  // Like post mutation - always use POST, backend handles toggle
+  // Like/unlike post mutation - uses correct method based on current state
   const likePostMutation = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, isCurrentlyLiked }: { id: string; isCurrentlyLiked: boolean }) => {
+      if (isCurrentlyLiked) {
+        return forumsApi.unlikePost(id);
+      }
       return forumsApi.likePost(id);
     },
-    onMutate: async (id) => {
+    onMutate: async ({ id, isCurrentlyLiked }) => {
       // Optimistic update
       setLikedPosts((prev) => {
         const newSet = new Set(prev);
-        if (newSet.has(id)) {
+        if (isCurrentlyLiked) {
           newSet.delete(id);
         } else {
           newSet.add(id);
         }
         return newSet;
       });
+      return { id, isCurrentlyLiked };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["post", postId] });
     },
-    onError: (_, id) => {
+    onError: (_, { id, isCurrentlyLiked }) => {
       // Revert on error
       setLikedPosts((prev) => {
         const newSet = new Set(prev);
-        if (newSet.has(id)) {
-          newSet.delete(id);
+        if (isCurrentlyLiked) {
+          newSet.add(id); // Was liked, failed to unlike, restore
         } else {
-          newSet.add(id);
+          newSet.delete(id); // Was not liked, failed to like, remove
         }
         return newSet;
       });
@@ -140,34 +144,38 @@ export default function PostDetailPage() {
     },
   });
 
-  // Like comment mutation - always use POST, backend handles toggle
+  // Like/unlike comment mutation - uses correct method based on current state
   const likeCommentMutation = useMutation({
-    mutationFn: async (commentId: string) => {
+    mutationFn: async ({ commentId, isCurrentlyLiked }: { commentId: string; isCurrentlyLiked: boolean }) => {
+      if (isCurrentlyLiked) {
+        return forumsApi.unlikeComment(commentId);
+      }
       return forumsApi.likeComment(commentId);
     },
-    onMutate: async (commentId) => {
+    onMutate: async ({ commentId, isCurrentlyLiked }) => {
       // Optimistic update
       setLikedComments((prev) => {
         const newSet = new Set(prev);
-        if (newSet.has(commentId)) {
+        if (isCurrentlyLiked) {
           newSet.delete(commentId);
         } else {
           newSet.add(commentId);
         }
         return newSet;
       });
+      return { commentId, isCurrentlyLiked };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["post-comments", postId] });
     },
-    onError: (_, commentId) => {
+    onError: (_, { commentId, isCurrentlyLiked }) => {
       // Revert on error
       setLikedComments((prev) => {
         const newSet = new Set(prev);
-        if (newSet.has(commentId)) {
-          newSet.delete(commentId);
+        if (isCurrentlyLiked) {
+          newSet.add(commentId); // Was liked, failed to unlike, restore
         } else {
-          newSet.add(commentId);
+          newSet.delete(commentId); // Was not liked, failed to like, remove
         }
         return newSet;
       });
@@ -297,7 +305,7 @@ export default function PostDetailPage() {
                   variant="ghost"
                   size="sm"
                   className={`h-7 text-xs gap-1 ${likedComments.has(comment._id) ? "text-primary bg-primary/10" : ""}`}
-                  onClick={() => likeCommentMutation.mutate(comment._id)}
+                  onClick={() => likeCommentMutation.mutate({ commentId: comment._id, isCurrentlyLiked: likedComments.has(comment._id) })}
                   title={t(likedComments.has(comment._id) ? "Remove upvote" : "Upvote this comment")}
                 >
                   <ThumbsUp className={`h-3 w-3 ${likedComments.has(comment._id) ? "fill-primary" : ""}`} />
@@ -398,7 +406,7 @@ export default function PostDetailPage() {
                   variant="ghost"
                   size="sm"
                   className={`h-8 px-3 gap-1 ${likedPosts.has(post._id) ? "text-primary bg-primary/10" : "text-muted-foreground"}`}
-                  onClick={() => likePostMutation.mutate(post._id)}
+                  onClick={() => likePostMutation.mutate({ id: post._id, isCurrentlyLiked: likedPosts.has(post._id) })}
                   title={t(likedPosts.has(post._id) ? "Remove upvote" : "Upvote this post")}
                 >
                   <ThumbsUp className={`h-4 w-4 ${likedPosts.has(post._id) ? "fill-primary" : ""}`} />

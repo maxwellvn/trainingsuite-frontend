@@ -79,7 +79,7 @@ export function Header() {
 
         {/* Left: Logo */}
         <div className="flex items-center gap-8">
-          <Logo />
+          <Logo reload />
 
           {/* Desktop Nav - Minimal */}
           <nav className="hidden md:flex items-center gap-6">
@@ -228,7 +228,7 @@ export function Header() {
             <SheetContent side="right" className="w-full sm:w-[350px] p-0 border-l border-border bg-background">
               <div className="flex flex-col h-full">
                 <div className="p-6 border-b border-border">
-                  <Logo />
+                  <Logo reload />
                 </div>
 
                 <div className="p-6 flex-1 overflow-y-auto">
