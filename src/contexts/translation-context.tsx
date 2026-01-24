@@ -334,8 +334,17 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
 
 export function useTranslation() {
   const context = useContext(TranslationContext);
+  
+  // Return safe defaults during SSR/build time when context is not available
   if (!context) {
-    throw new Error('useTranslation must be used within TranslationProvider');
+    return {
+      language: 'en',
+      setLanguage: () => {},
+      t: (text: string) => text,
+      isTranslating: false,
+      translateBatch: async () => {},
+      supportedLanguages: SUPPORTED_LANGUAGES,
+    };
   }
   return context;
 }
