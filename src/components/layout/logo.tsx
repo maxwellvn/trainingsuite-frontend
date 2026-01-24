@@ -40,7 +40,12 @@ export function Logo({ className, iconOnly = false, variant = "default", reload 
           >
             Rhapsody Global
           </span>
-          <span className="text-xs font-medium text-muted-foreground">
+          <span 
+            className={cn(
+              "text-xs font-medium",
+              variant === "light" ? "text-white/80" : "text-muted-foreground"
+            )}
+          >
             Missionaries Portal
           </span>
         </div>

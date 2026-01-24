@@ -75,7 +75,7 @@ const cardGradients = [
   "bg-gradient-to-br from-cyan-500 to-blue-600",
 ];
 
-function CourseCard({ course, index, enrollment }: { course: Course; index: number; enrollment?: Enrollment }) {
+function CourseCard({ course, index, enrollment, viewMode = "grid" }: { course: Course; index: number; enrollment?: Enrollment; viewMode?: "grid" | "list" }) {
   const { t } = useT();
   const gradient = cardGradients[index % cardGradients.length];
   const isEnrolled = !!enrollment;
@@ -96,6 +96,95 @@ function CourseCard({ course, index, enrollment }: { course: Course; index: numb
     return null;
   };
 
+  // List view layout
+  if (viewMode === "list") {
+    return (
+      <Link href={`/courses/${course.slug || course._id}`}>
+        <Card className="overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow border shadow-sm">
+          <div className="flex flex-col sm:flex-row">
+            {/* Thumbnail */}
+            <div className={`h-40 sm:h-auto sm:w-48 md:w-56 ${gradient} relative overflow-hidden shrink-0`}>
+              {normalizeUploadUrl(course.thumbnail) && (
+                <img
+                  src={normalizeUploadUrl(course.thumbnail)}
+                  alt={t(course.title)}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              )}
+              <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
+              <div className="absolute top-3 left-3 flex gap-2 flex-wrap sm:hidden">
+                <Badge variant="secondary" className="text-xs capitalize">
+                  {t(course.level || "beginner")}
+                </Badge>
+                {getEnrollmentBadge()}
+              </div>
+            </div>
+            {/* Content */}
+            <CardContent className="p-4 flex-1 flex flex-col">
+              <div className="flex-1">
+                <div className="hidden sm:flex gap-2 flex-wrap mb-2">
+                  <Badge variant="secondary" className="text-xs capitalize">
+                    {t(course.level || "beginner")}
+                  </Badge>
+                  {course.language && (
+                    <Badge variant="outline" className="text-xs">
+                      <Globe className="h-3 w-3 mr-1" />
+                      {getLanguageName(course.language)}
+                    </Badge>
+                  )}
+                  {getEnrollmentBadge()}
+                </div>
+                <h3 className="font-semibold text-base group-hover:text-primary transition-colors line-clamp-2">
+                  {t(course.title)}
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1 line-clamp-2 hidden sm:block">
+                  {course.description ? t(course.description.substring(0, 150)) : ""}
+                </p>
+                <div className="flex items-center gap-3 mt-2">
+                  {course.rating && course.rating > 0 ? (
+                    <div className="flex items-center gap-1 text-amber-500">
+                      <Star className="h-3.5 w-3.5 fill-current" />
+                      <span className="text-xs font-medium">{course.rating.toFixed(1)}</span>
+                    </div>
+                  ) : null}
+                  <span className="text-xs text-muted-foreground">
+                    {(course.enrollmentCount || 0).toLocaleString()} <T>enrolled</T>
+                  </span>
+                </div>
+              </div>
+              {/* Progress or CTA */}
+              <div className="mt-3 flex flex-col sm:flex-row sm:items-center gap-3">
+                {isEnrolled ? (
+                  <>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-muted-foreground">
+                          {isCompleted ? <T>Completed</T> : <>{progress}% <T>complete</T></>}
+                        </span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-1.5">
+                        <div
+                          className={`h-1.5 rounded-full transition-all ${isCompleted ? "bg-green-500" : "bg-primary"}`}
+                          style={{ width: `${Math.min(progress, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    <Button size="sm" className={`h-8 text-xs ${isCompleted ? "bg-green-600 hover:bg-green-700" : ""}`}>
+                      {isCompleted ? <T>Review Course</T> : <T>Continue</T>}
+                    </Button>
+                  </>
+                ) : (
+                  <Button size="sm" className="h-8 text-xs w-full sm:w-auto"><T>Start Training</T></Button>
+                )}
+              </div>
+            </CardContent>
+          </div>
+        </Card>
+      </Link>
+    );
+  }
+
+  // Grid view layout (default)
   return (
     <Link href={`/courses/${course.slug || course._id}`}>
       <Card className="overflow-hidden group cursor-pointer h-full hover:shadow-lg transition-shadow border shadow-sm">
@@ -535,6 +624,7 @@ function CoursesContent() {
                   course={course}
                   index={index}
                   enrollment={enrollmentMap.get(course._id)}
+                  viewMode={viewMode}
                 />
               ))}
             </div>
