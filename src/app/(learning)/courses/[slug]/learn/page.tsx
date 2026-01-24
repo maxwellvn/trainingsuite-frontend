@@ -40,7 +40,7 @@ import { lessonsApi } from "@/lib/api/lessons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Module, Lesson, Course } from "@/types";
 
-function getVideoEmbedUrl(url: string): { type: 'youtube' | 'vimeo' | 'direct' | 'unknown'; embedUrl: string } {
+function getVideoEmbedUrl(url: string): { type: 'youtube' | 'vimeo' | 'direct' | 'unknown'; embedUrl: string; videoId?: string } {
   if (!url) return { type: 'unknown', embedUrl: '' };
 
   // YouTube patterns
@@ -50,6 +50,7 @@ function getVideoEmbedUrl(url: string): { type: 'youtube' | 'vimeo' | 'direct' |
     return {
       type: 'youtube',
       embedUrl: `https://www.youtube.com/embed/${youtubeMatch[1]}?rel=0&modestbranding=1`,
+      videoId: youtubeMatch[1],
     };
   }
 
@@ -60,6 +61,7 @@ function getVideoEmbedUrl(url: string): { type: 'youtube' | 'vimeo' | 'direct' |
     return {
       type: 'vimeo',
       embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}`,
+      videoId: vimeoMatch[1],
     };
   }
 
@@ -90,6 +92,24 @@ function getVideoEmbedUrl(url: string): { type: 'youtube' | 'vimeo' | 'direct' |
 
   // Default: try as direct URL
   return { type: 'direct', embedUrl: url };
+}
+
+/**
+ * Get video thumbnail URL based on video type
+ */
+function getVideoThumbnail(url: string): string | undefined {
+  if (!url) return undefined;
+
+  // YouTube - use their thumbnail API
+  const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+  const youtubeMatch = url.match(youtubeRegex);
+  if (youtubeMatch) {
+    // Try maxresdefault first, fallback handled by browser
+    return `https://img.youtube.com/vi/${youtubeMatch[1]}/maxresdefault.jpg`;
+  }
+
+  // For direct videos, we'll generate thumbnail from the video itself
+  return undefined;
 }
 
 // Declare YouTube API types
@@ -186,6 +206,7 @@ function VideoPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [videoPoster, setVideoPoster] = useState<string | undefined>(undefined);
   const lastSaveRef = useRef(0);
 
   // Reset state when lesson changes
@@ -194,7 +215,15 @@ function VideoPlayer({
     setDuration(0);
     setIsPlaying(false);
     lastSaveRef.current = 0;
-  }, [lessonId]);
+    
+    // Set poster based on video type
+    if (lesson?.videoUrl) {
+      const thumbnail = getVideoThumbnail(lesson.videoUrl);
+      setVideoPoster(thumbnail);
+    } else {
+      setVideoPoster(undefined);
+    }
+  }, [lessonId, lesson?.videoUrl]);
 
   // Load YouTube API
   useEffect(() => {
@@ -243,9 +272,8 @@ function VideoPlayer({
           rel: 0,
           modestbranding: 1,
           autoplay: 1,
-          disablekb: 1, // Disable keyboard controls (prevents seeking with arrow keys)
           controls: 1,
-          fs: 0, // Disable fullscreen
+          fs: 1, // Allow fullscreen
         },
         events: {
           onStateChange: (event: { data: number }) => {
@@ -334,17 +362,7 @@ function VideoPlayer({
     );
   }
 
-  // Direct video file - use HTML5 video with onEnded (no seeking, autoplay)
-  // Toggle play/pause on click
-  const handleVideoClick = () => {
-    if (videoRef.current) {
-      if (videoRef.current.paused) {
-        videoRef.current.play();
-      } else {
-        videoRef.current.pause();
-      }
-    }
-  };
+  // Direct video file - use HTML5 video with full controls including seeking
 
   // Handle time update for display and progress saving
   const handleTimeUpdate = useCallback(() => {
@@ -375,29 +393,55 @@ function VideoPlayer({
     }
   }, [lessonId]);
 
+  // Generate poster from video frame for direct videos (if no poster yet)
+  const handleLoadedData = useCallback(() => {
+    if (videoRef.current && !videoPoster) {
+      const video = videoRef.current;
+      // Seek to 1 second or 10% of video to get a good frame
+      const seekTime = Math.min(1, video.duration * 0.1);
+      
+      // Create a temporary video to capture frame without affecting playback
+      const tempVideo = document.createElement('video');
+      tempVideo.crossOrigin = 'anonymous';
+      tempVideo.src = video.currentSrc || embedUrl;
+      tempVideo.currentTime = seekTime;
+      
+      tempVideo.addEventListener('seeked', () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = tempVideo.videoWidth || 1280;
+          canvas.height = tempVideo.videoHeight || 720;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
+            const posterUrl = canvas.toDataURL('image/jpeg', 0.8);
+            setVideoPoster(posterUrl);
+          }
+        } catch {
+          // CORS or other error - ignore
+        }
+        tempVideo.remove();
+      }, { once: true });
+      
+      tempVideo.addEventListener('error', () => {
+        tempVideo.remove();
+      }, { once: true });
+    }
+  }, [videoPoster, embedUrl]);
+
   return (
     <div className="aspect-video bg-slate-900 relative group">
-      <style jsx>{`
-        video::-webkit-media-controls-timeline {
-          display: none;
-        }
-        video::-webkit-media-controls-current-time-display,
-        video::-webkit-media-controls-time-remaining-display {
-          display: none;
-        }
-      `}</style>
       <video
         ref={videoRef}
-        className="w-full h-full cursor-pointer"
+        className="w-full h-full"
         controls
-        controlsList="nodownload nofullscreen noplaybackrate"
-        disablePictureInPicture
+        controlsList="nodownload"
         playsInline
         autoPlay
-        onClick={handleVideoClick}
         onEnded={handleVideoEnd}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
+        onLoadedData={handleLoadedData}
         onPlay={() => setIsPlaying(true)}
         onPause={() => {
           setIsPlaying(false);
@@ -406,36 +450,12 @@ function VideoPlayer({
             saveVideoProgress(lessonId, videoRef.current.currentTime, videoRef.current.duration);
           }
         }}
-        onLoadedData={(e) => {
-          // Prevent seeking by resetting currentTime when user tries to seek
-          const video = e.currentTarget;
-          let lastTime = 0;
-          video.addEventListener('timeupdate', () => {
-            if (!video.seeking) {
-              lastTime = video.currentTime;
-            }
-          });
-          video.addEventListener('seeking', () => {
-            // Only allow seeking backwards up to 5 seconds or forward if already watched
-            const delta = video.currentTime - lastTime;
-            if (delta > 1) {
-              video.currentTime = lastTime;
-            }
-          });
-        }}
-        poster="/video-placeholder.jpg"
+        poster={videoPoster}
       >
         <source src={embedUrl} type="video/mp4" />
         <source src={embedUrl} type="video/webm" />
         Your browser does not support the video tag.
       </video>
-      
-      {/* Time display overlay */}
-      {duration > 0 && (
-        <div className="absolute bottom-14 right-3 bg-black/70 text-white text-sm px-2 py-1 rounded pointer-events-none font-mono">
-          {formatVideoTime(currentTime)} / {formatVideoTime(duration)}
-        </div>
-      )}
     </div>
   );
 }
