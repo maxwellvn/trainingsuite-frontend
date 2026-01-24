@@ -76,9 +76,7 @@ export default function SettingsPage() {
       const uploadResponse = await apiClient.post<{
         success: boolean;
         data: { fileUrl: string };
-      }>("/upload", formData, {
-        headers: { "Content-Type": undefined },
-      });
+      }>("/upload", formData);
 
       if (!uploadResponse.data.success) {
         throw new Error("Upload failed");
