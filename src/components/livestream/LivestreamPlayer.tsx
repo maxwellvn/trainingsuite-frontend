@@ -394,7 +394,7 @@ export function LivestreamPlayer({
       )}
       
       <ReactPlayer
-        url={url}
+        src={url}
         width="100%"
         height="100%"
         playing={autoplay}
@@ -419,6 +419,12 @@ export function LivestreamPlayer({
               portrait: false,
               title: false,
             },
+          },
+          hls: {
+            maxBufferLength: 30,
+            maxMaxBufferLength: 600,
+            maxBufferSize: 60 * 1000 * 1000,
+            maxBufferHole: 0.5,
           },
         }}
         onReady={() => {
