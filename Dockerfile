@@ -23,9 +23,8 @@ ENV TURBOPACK=0
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build the application using webpack (not turbopack) and clean up in one layer to reduce size
-# The --no-turbopack flag ensures standalone output is generated
-RUN npx next build --no-turbopack && \
+# Build the application using webpack (default) and clean up in one layer to reduce size
+RUN npx next build && \
     rm -rf node_modules/.cache && \
     rm -rf .next/cache
 
