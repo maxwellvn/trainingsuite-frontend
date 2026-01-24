@@ -9,7 +9,6 @@ import {
   Grid3X3,
   List,
   Star,
-  Play,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -95,11 +94,6 @@ function CourseCard({ course, index, enrollment }: { course: Course; index: numb
               {course.level}
             </Badge>
             {getEnrollmentBadge()}
-          </div>
-          <div className="absolute bottom-3 left-3">
-            <div className="h-8 w-8 rounded-full bg-black/30 flex items-center justify-center">
-              <Play className="h-4 w-4 text-white fill-white" />
-            </div>
           </div>
         </div>
         <CardContent className="p-4">

@@ -6,7 +6,6 @@ import {
   BookOpen,
   Users,
   Award,
-  Play,
   Star,
   Check,
 } from "lucide-react";
@@ -37,7 +36,6 @@ function CourseCard({ course, enrollment }: { course: Course; enrollment?: Enrol
           ) : (
             <div className="absolute inset-0 bg-neutral-100 dark:bg-neutral-800" />
           )}
-          <Play className="h-8 w-8 text-white/60 group-hover:text-white transition-colors relative z-10 drop-shadow-lg" />
 
           <div className="absolute top-3 right-3 z-10">
             <Badge variant="outline" className="bg-background text-foreground font-medium rounded-none border-foreground/10 capitalize text-xs tracking-wide">
