@@ -169,6 +169,13 @@ export function LivestreamPlayer({
     setStreamType(type);
     setError(null);
     setIsLoading(true);
+    
+    // Auto-hide loading after 5 seconds as fallback
+    const timeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000);
+    
+    return () => clearTimeout(timeout);
   }, [url]);
 
   const handleReady = useCallback(() => {
@@ -366,9 +373,9 @@ export function LivestreamPlayer({
   // For YouTube, Vimeo, HLS - use ReactPlayer
   return (
     <div className={cn("relative aspect-video bg-black rounded-lg overflow-hidden", className)}>
-      {/* Loading overlay */}
+      {/* Loading overlay - pointer-events-none so player is clickable underneath */}
       {isLoading && (
-        <div className="absolute inset-0 bg-slate-900 flex items-center justify-center z-10">
+        <div className="absolute inset-0 bg-slate-900/80 flex items-center justify-center z-10 pointer-events-none">
           <div className="text-center text-white">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
             <p className="text-sm text-white/70">Loading stream...</p>
@@ -397,12 +404,36 @@ export function LivestreamPlayer({
         playbackRate={playbackRate}
         light={light}
         config={{
-          youtube: getPlayerConfig().youtube,
-          vimeo: getPlayerConfig().vimeo,
+          youtube: {
+            playerVars: {
+              controls: controls ? 1 : 0,
+              modestbranding: 1,
+              rel: 0,
+              playsinline: 1,
+            },
+          },
+          vimeo: {
+            playerOptions: {
+              controls: controls,
+              byline: false,
+              portrait: false,
+              title: false,
+            },
+          },
         }}
-        onReady={handleReady}
-        onStart={onStart}
-        onPlay={onPlay}
+        onReady={() => {
+          setIsLoading(false);
+          setError(null);
+          onReady?.();
+        }}
+        onStart={() => {
+          setIsLoading(false);
+          onStart?.();
+        }}
+        onPlay={() => {
+          setIsLoading(false);
+          onPlay?.();
+        }}
         onPause={onPause}
         onEnded={onEnded}
         onError={handleError}
