@@ -251,38 +251,63 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
     toTranslate.forEach(text => pendingTranslations.current.add(text));
     setIsTranslating(true);
 
+    // API limit is 50 texts per request - chunk into smaller batches
+    const BATCH_SIZE = 50;
+    const chunks: string[][] = [];
+    for (let i = 0; i < toTranslate.length; i += BATCH_SIZE) {
+      chunks.push(toTranslate.slice(i, i + BATCH_SIZE));
+    }
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/translate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          texts: toTranslate,
-          from: 'en',
-          to: language,
-        }),
+      // Process all chunks in parallel
+      const results = await Promise.allSettled(
+        chunks.map(async (chunk) => {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/translate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              texts: chunk,
+              from: 'en',
+              to: language,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success && data.data?.translations) {
+            Object.entries(data.data.translations).forEach(([original, translated]) => {
+              const cacheKey = getCacheKey(original, 'en', language);
+              translationCache.set(cacheKey, translated as string);
+            });
+            return { success: true };
+          } else if (response.status === 429) {
+            return { success: false, rateLimited: true, chunk };
+          } else {
+            console.error('Translation failed:', data.error || 'Unknown error');
+            return { success: false };
+          }
+        })
+      );
+
+      // Handle rate-limited chunks with retry
+      const rateLimitedChunks: string[] = [];
+      results.forEach((result) => {
+        if (result.status === 'fulfilled' && result.value.rateLimited && result.value.chunk) {
+          rateLimitedChunks.push(...result.value.chunk);
+        }
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success && data.data?.translations) {
-        Object.entries(data.data.translations).forEach(([original, translated]) => {
-          const cacheKey = getCacheKey(original, 'en', language);
-          translationCache.set(cacheKey, translated as string);
-        });
-        saveCache();
-        // Force re-render after translations arrive
-        setTranslationVersion(v => v + 1);
-      } else if (response.status === 429 && retryCount < 3) {
-        // Rate limited - retry after delay
+      if (rateLimitedChunks.length > 0 && retryCount < 3) {
         console.warn('Translation rate limited, retrying in 2s...');
-        toTranslate.forEach(text => pendingTranslations.current.delete(text));
+        rateLimitedChunks.forEach(text => pendingTranslations.current.delete(text));
         setTimeout(() => {
-          translateBatch(toTranslate, retryCount + 1);
+          translateBatch(rateLimitedChunks, retryCount + 1);
         }, 2000 * (retryCount + 1)); // Exponential backoff
-        return;
-      } else {
-        console.error('Translation failed:', data.error || 'Unknown error');
       }
+
+      saveCache();
+      // Force re-render after translations arrive
+      setTranslationVersion(v => v + 1);
     } catch (error) {
       console.error('Translation batch failed:', error);
     } finally {
